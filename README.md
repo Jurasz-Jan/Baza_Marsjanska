@@ -1,7 +1,7 @@
-#Baza_Marsjanska
-##Projekt na Algorytmy i Struktury Danych II. Autorzy: Jan Jurasz, Adam Migdalski, Paweł Kopeć.
+# Baza_Marsjanska
+## Projekt na Algorytmy i Struktury Danych II. Autorzy: Jan Jurasz, Adam Migdalski, Paweł Kopeć.
 
-##Baza marsjańska
+## Baza marsjańska
 Na obcej planecie zakładana jest ziemska kolonia. Początkowo astronauci mają do dyspozycji tylko jeden moduł pełniący funkcję bazy. Do tego modułu podłączane są następne części (zasoby). Graf zadań opisuje zadania, które wykonują poszczególne sekcje bazy (wierzchołki) oraz ilość danych (d) przesyłanych pomiędzy zasobami (krawędzie). Moduły można podzielić na 2 rodzaje:
 
 Ogólnego przeznaczenia - mogące wykonywać więcej niż jedno zadanie (wykonują zadanie wolno, ale niskim kosztem)
@@ -31,23 +31,23 @@ Pokolenie początkowe
 ##	Pokolenie początkowe
 Losowo wygenerowane (n) genotypów (П=anz) zależne od liczby wierzchołków w grafie zadań (n) oraz liczby zasobów (z). Wielkość pokolenia początkowego jest sterowana przez użytkownika programu poprzez parametr a (podawany z klawiatury).
 
-Krzyżowanie
+## Krzyżowanie
 Przy pomocy operatora selekcji wybieranych jest w genotypów (w=y*n; parametr y jest podawany przez użytkownika z klawiatury spomiędzy wartości 0-1; 0<y<1). Następnie osobniki łączone są losowo w pary, losowo wybierany jest punkt przecięcia i następuje wymiana poddrzew pomiędzy rozwiązaniami.
 
-Mutacja
+## Mutacja
 Przy pomocy operatora selekcji wybieranych jest genotypów (Q=ẞ*П; parametr ẞ jest podawany przez użytkownika z klawiatury spomiędzy wartości 0-1; 0<B<1). Następnie losowo wybierany jest węzeł (dla każdego rozwiązania osobno) i zamieniana jest opcja znajdująca się w wybranym węźle na inną (uwzględniając prawdopodobieństwo wyboru poszczególnych opcji).
 
-Klonowanie
+## Klonowanie
 Przy pomocy operatora selekcji wybieranych jest O genotypów (D=8*П; parametr 8 jest podawany przez użytkownika z klawiatury spomiędzy wartości 0-1; 0<8<1). Genotypy te są kopiowane do następnego pokolenia.
 
-Selekcja
+## Selekcja
 Do wyboru.
 
-Warunek stop
+## Warunek stop
 Jeśli w ε kolejnych rozwiązań lepsze rozwiązanie nie zostanie znalezione, algorytm kończy działanie.
 
-Mapowanie genotypu w fenotyp
+## Mapowanie genotypu w fenotyp
 Wykonanie wszystkich funkcji w węzłach genotypu, obliczenie czasu i kosztu rozwiązania.
 
-Cel algorytmu
+## Cel algorytmu
 Celem jest uzyskanie najtańszego systemu nie przekraczającego ograniczeń czasowych (ograniczenie czasowe to maksymalny czas, w którym wszystkie zadania powinny zostać wykonane, jest on podawany przez użytkownika programu z klawiatury).
