@@ -48,6 +48,11 @@ unsigned int factorial(unsigned int n) {
     return result;
 }
 
+
+
+
+
+
 // n- number of habitats, 
 // z-number of resources
 // a-inputted parameter
@@ -58,12 +63,31 @@ class BaseManager(int n, int z)
 {
 	std::vector<Habitat> habitats;
 	
+	
+	
+	
+	
+	
+	
 	if (a*n*z > (factorial(n))/2) 
 	{
-		std::cerr << "Error: Wrong number of habitats. Don't blame me, this just doesn't make sense mathematically." << std::endl;
-		std:cerr << " (N-1)! must be greater than or equal to A*Z, where A is inputted from keyboard, and Z is number of tasks"<<std:endl;
-        return 1; // Return a non-zero value to indicate an error
+		//std::cerr << "Error: Wrong number of habitats. Don't blame me, this just doesn't make sense mathematically." << std::endl;
+		//std:cerr << " (N-1)! must be greater than or equal to A*Z, where A is inputted from keyboard, and Z is number of tasks"<<std:endl;
+        //return 1; // Return a non-zero value to indicate an error
+		print("We need more habitats");
+		//Population must be of size ANB. I suggest we should keep building until it will be possible to create ANB unique combinations
+				
+		
 	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
 	
 }
