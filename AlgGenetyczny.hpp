@@ -1,6 +1,6 @@
 
 
-void mutacja(std::vector<Rozwiazanie>& populacja, double prawdopodobienstwoMutacji) {
+void mutate(std::vector<Individual>& population, double probability) {
    
     
 }
@@ -50,6 +50,38 @@ unsigned int factorial(unsigned int n) {
 
 
 
+std::vector<ChannelConnection> generateRandomConnections(int numberOfConnections,int n) {
+    std::vector<ChannelConnection> connections;
+
+    // generate random connections
+    for (int i = 0; i < numberOfConnections; ++i) {
+        int sourceHabitatId = /*generate randomly from 0 to n */;
+        int destinationHabitatId = /* cannot be sourceHabitatID */;
+        double cost = /* generate random cost */;
+        double bandwidth = /* Generate random bandwidth */;
+
+        ChannelConnection connection(sourceHabitatId, destinationHabitatId, cost, bandwidth);
+        connections.push_back(connection);
+    }
+
+    return connections;
+}
+
+
+
+
+std::vector<Individual> createInitialPopulation(int populationSize, int numberOfConnections) {
+    std::vector<Individual> population;
+
+    // generate random individuals
+    for (int i = 0; i < populationSize; ++i) {
+        std::vector<ChannelConnection> connections = generateRandomConnections(numberOfConnections);
+        Individual individual(connections);
+        population.push_back(individual);
+    }
+
+    return population;
+}
 
 
 
