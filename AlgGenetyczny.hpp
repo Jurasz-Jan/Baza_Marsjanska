@@ -2,6 +2,8 @@
 #include <stdexcept>
 #include <iostream>
 #include "Base.hpp"
+#include <random>
+
 
 //"manager" is kind of class
 //that well manages some sort of objects
@@ -22,6 +24,7 @@ const int POPULATION_SIZE = 50;
 const int MAX_GENERATIONS = 100;
 const double MUTATION_RATE = 0.1;
 const double CROSSOVER_RATE = 0.8;
+const int MAX_CHROMOSOME_SIZE = 10;
 
 
 
@@ -31,8 +34,7 @@ class BaseManager
 
 	std::vector<Habitat> habitats;
 	std::vector<Individual> population;
-	
-	
+	std::vector<std::pair<int, int>> chromosome;
 	
 	
 class Individual
@@ -84,18 +86,65 @@ public:
 	}
 
 */
+//LETS SUPPOSE TERE EXISTS #DEFINE NUM_HABITATS
+int NUM_HABITATS=10;
 
- std::vector<Individual> initializePopulation()
+std::vector<Individual> initializePopulation(int size_of_population)
+{
+    std::vector<Individual> population;
+
+    // Generowanie populacji
+    for (int i = 0; i < size_of_population; ++i)
     {
-        std::vector<Individual> population;
-        for (int i = 0; i < POPULATION_SIZE; ++i)
+        std::vector<std::pair<int, int>> connections;
+        std::vector<std::pair<int, int>> existingConnections;
+
+        // Generowanie losowych połączeń dla chromosomu
+        while (connections.size() < MAX_CHROMOSOME_SIZE)
         {
-            std::vector<int> chromosome;
-            //chromosome is a combination of numbers. How can it work?
-            population.emplace_back(chromosome);
+            std::uniform_int_distribution<int> dist(1, NUM_HABITATS); // Numery habitacji od 1 do NUM_HABITATS
+
+            int habitatA = dist(gen);
+            int habitatB = dist(gen);
+
+            
+            bool isValidConnection = true;
+
+            
+            if (habitatA == habitatB)
+            {
+                isValidConnection = false;
+            }
+
+            
+            if (std::find(existingConnections.begin(), existingConnections.end(), std::make_pair(habitatA, habitatB)) != existingConnections.end() ||
+                std::find(existingConnections.begin(), existingConnections.end(), std::make_pair(habitatB, habitatA)) != existingConnections.end())
+            {
+                isValidConnection = false;
+            }
+
+            
+            if (std::find(existingConnections.begin(), existingConnections.end(), std::make_pair(habitatB, habitatA)) != existingConnections.end())
+            {
+                isValidConnection = false;
+            }
+
+            
+            if (isValidConnection)
+            {
+                connections.emplace_back(habitatA, habitatB);
+                existingConnections.push_back(std::make_pair(habitatA, habitatB));
+            }
         }
-        return population;
+
+        population.emplace_back(connections);
     }
+
+    return population;
+}
+
+
+
 
     
     void mutate(Individual &individual)
@@ -112,11 +161,30 @@ public:
 
     
     Individual crossover(const Individual &parent1, const Individual &parent2)
+{
+    std::vector<int> offspringChromosome;
+
+   
+    
+    std::uniform_int_distribution<int> dist(0, parent1.chromosome.size() - 1);
+    int crossoverPoint = dist(gen);
+
+   
+    for (int i = 0; i < parent1.chromosome.size(); ++i)
     {
-        std::vector<int> offspringChromosome;
-        //add crossover
-        return Individual(offspringChromosome);
+        if (i < crossoverPoint)
+        {
+            offspringChromosome.push_back(parent1.chromosome[i]);
+        }
+        else
+        {
+            offspringChromosome.push_back(parent2.chromosome[i]);
+        }
     }
+
+    return Individual(offspringChromosome);
+}
+
 
 
     
