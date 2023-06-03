@@ -19,7 +19,7 @@
 std::random_device rd;
 std::mt19937 gen(rd());
 
-
+    
 const int POPULATION_SIZE = 50;
 const int MAX_GENERATIONS = 100;
 const double MUTATION_RATE = 0.1;
@@ -153,8 +153,7 @@ std::vector<Individual> initializePopulation(int size_of_population)
         {
             if (std::generate_canonical<double, 10>(gen) < MUTATION_RATE)
             {
-                // Perform mutation operation on the chromosome
-                // Add code here to modify the chromosome based on your mutation strategy
+                
             }
         }
     }
@@ -209,14 +208,58 @@ std::vector<Individual> initializePopulation(int size_of_population)
     }
 	
 	
-   std::pair<Individual, Individual> selectParents(const std::vector<Individual> &population)
+std::pair<Individual, Individual> selectParents(const std::vector<Individual>& population)
+{
+    std::random_device rd;
+    std::mt19937 gen(rd());
+
+    
+    int tournamentSize = 5;
+
+    // select participants for the first tournament
+    std::vector<Individual> participants;
+    for (int i = 0; i < tournamentSize; ++i)
     {
-        std::uniform_int_distribution<> dis(0, POPULATION_SIZE - 1);
-        Individual parent1 = population[dis(gen)];
-        Individual parent2 = population[dis(gen)];
-        return std::make_pair(parent1, parent2);
+        std::uniform_int_distribution<int> dist(0, population.size() - 1);
+        int index = dist(gen);
+        participants.push_back(population[index]);
     }
-	
+
+    // fnd the individual with the highest fitness in the tournament
+    Individual parent1 = *std::max_element(participants.begin(), participants.end(),
+        [](const Individual& ind1, const Individual& ind2)
+        {
+            return ind1.fitness < ind2.fitness;
+        });
+
+    
+
+    // select participants for the second tournament from the updated population
+    participants.clear();
+    for (int i = 0; i < tournamentSize; ++i)
+    {
+        std::uniform_int_distribution<int> dist(0, population.size() - 1);
+        int index = dist(gen);
+        participants.push_back(population[index]);
+    }
+
+    // find the individual with the highest fitness in the second tournament
+    Individual parent2 = *std::max_element(participants.begin(), participants.end(),
+        [](const Individual& ind1, const Individual& ind2)
+        {
+            return ind1.fitness < ind2.fitness;
+        });
+        
+    // remove the selected parent from the population
+    auto parent1It = std::find(population.begin(), population.end(), parent1);
+    population.erase(parent1It);    
+    //auto parent2It = std::find(population.begin(), population.end(), parent2);
+    population.erase(parent1It);
+
+    return std::make_pair(parent1, parent2);
+}
+
+
   
 	
 	
@@ -232,7 +275,7 @@ std::vector<Individual> initializePopulation(int size_of_population)
             Individual offspring = crossover(parents.first, parents.second);
             mutate(offspring);
 
-            newPopulation.emplace_back(offspring);
+            newPopulation.push_back(offspring);
         }
 
         return newPopulation;
