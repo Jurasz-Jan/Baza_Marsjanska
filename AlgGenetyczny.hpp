@@ -8,13 +8,42 @@
 //and that's it
 //every "base" in abstract thinking
 //schould have exacly ONE manager
+
+
+
+
+
+// RNG 
+std::random_device rd;
+std::mt19937 gen(rd());
+
+
+const int POPULATION_SIZE = 50;
+const int MAX_GENERATIONS = 100;
+const double MUTATION_RATE = 0.1;
+const double CROSSOVER_RATE = 0.8;
+
+
+
 class BaseManager
 {
 	//HabitatDatabase* database;
 
 	std::vector<Habitat> habitats;
-	//std::vector<Channel> channels; //The individual is a combination of channels- a vector of channels. Like this one on the left.
-	std::vector<std::vector<Channel>> population;
+	std::vector<Individual> population;
+	
+	
+	
+	
+class Individual
+{
+public:
+    std::vector<int> chromosome;
+    double fitness;
+
+    Individual(std::vector<int> chromosome) : chromosome(chromosome), fitness(0.0) {}
+};
+	
 
 
 
@@ -47,65 +76,132 @@ public:
 		channels.push_back(newChannel);
 	}
 
-
+/*
 	void AddIndividual(std::vector<std::vector<Channel>> newIndividual)
 	{
 		population.push_back(newIndividual);
 
 	}
 
+*/
 
-	
-
-	//Time and cost calculation (else algorithm quality check)
-	//-------------------------------------------------------
-	
-	//returns time required to made such task
-	//throws exception if cannot made such task
-
-
-
-
-	
-void InitializePopulation(int populationSize,int par1=1,int par2=1)
-{
-    // Clear the existing population
-    channels.clear();
-
-    // Generate random individuals
-    for (int i = 0; i < populationSize; i++)
+ std::vector<Individual> initializePopulation()
     {
-        std::vector<Channel> newIndividual;
-
-        // Generate random channels
-        for (int j = 0; j < habitats.size(); j++)
+        std::vector<Individual> population;
+        for (int i = 0; i < POPULATION_SIZE; ++i)
         {
-            Channel newChannel;
+            std::vector<int> chromosome;
+            //chromosome is a combination of numbers. How can it work?
+            population.emplace_back(chromosome);
+        }
+        return population;
+    }
 
-            // Generate random connections for the channel
-            // ...
+    
+    void mutate(Individual &individual)
+    {
+        for (int i = 0; i < individual.chromosome.size(); ++i)
+        {
+            if (std::generate_canonical<double, 10>(gen) < MUTATION_RATE)
+            {
+                // Perform mutation operation on the chromosome
+                // Add code here to modify the chromosome based on your mutation strategy
+            }
+        }
+    }
 
-            newIndividual.push_back(newChannel);
+    
+    Individual crossover(const Individual &parent1, const Individual &parent2)
+    {
+        std::vector<int> offspringChromosome;
+        //add crossover
+        return Individual(offspringChromosome);
+    }
+
+
+    
+    
+    void calculateFitness(Individual &individual)
+    {
+       //function calculating time of doing the task
+	//Time and cost calculation (else algorithm quality check)
+	//returns time required to made such task
+	//throws exception if cannot made such task	    
+	       	    
+    }
+
+
+	
+     void evaluatePopulation(std::vector<Individual> &population)
+    {
+        for (auto &individual : population)
+        {
+            calculateFitness(individual);
+        }
+    }
+	
+	
+   std::pair<Individual, Individual> selectParents(const std::vector<Individual> &population)
+    {
+        std::uniform_int_distribution<> dis(0, POPULATION_SIZE - 1);
+        Individual parent1 = population[dis(gen)];
+        Individual parent2 = population[dis(gen)];
+        return std::make_pair(parent1, parent2);
+    }
+	
+  
+	
+	
+   std::vector<Individual> generateNewPopulation(const std::vector<Individual> &population)
+    {
+        std::vector<Individual> newPopulation;
+        // Elitism-keeping best individual 
+	   
+        while (newPopulation.size() < POPULATION_SIZE)
+        {
+
+            std::pair<Individual, Individual> parents = selectParents(population);
+            Individual offspring = crossover(parents.first, parents.second);
+            mutate(offspring);
+
+            newPopulation.emplace_back(offspring);
         }
 
-        channels.push_back(newIndividual);
+        return newPopulation;
     }
-}
 
-    
-    void Mutate(Channel& individual, double mutationRate);
+	
+	
+	void runGeneticAlgorithm()
+    {
 
-    
-    Channel Crossover(const Channel& parent1, const Channel& parent2);
+        std::vector<Individual> population = initializePopulation();
+        evaluatePopulation(population);
+        int generation = 0;
+        while (generation < MAX_GENERATIONS)
+        {
+            
+            std::vector<Individual> newPopulation = generateNewPopulation(population);
+            evaluatePopulation(newPopulation);
+            // Replacing the population
+            population = newPopulation;
 
-    
-    std::vector<Channel> Selection(int numParents);
+            ++generation;
+        }
 
-    // Evolves the population for a certain number of generations
-    void Evolve(int numGenerations, int populationSize, double mutationRate);
+        // Selecting fittest one
+        Individual bestIndividual = population[0];
+        for (const auto &individual : population)
+        {
+            if (individual.fitness > bestIndividual.fitness)
+            {
+                bestIndividual = individual;
+            }
+        }
 
-
-
+        
+    }
+};
 
 
 private:
