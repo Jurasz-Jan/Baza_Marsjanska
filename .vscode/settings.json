@@ -54,7 +54,8 @@
         "xhash": "cpp",
         "xlocmon": "cpp",
         "xloctime": "cpp",
-        "xtree": "cpp"
+        "xtree": "cpp",
+        "functional": "cpp"
     },
     "sonarlint.pathToCompileCommands": "${workspaceFolder}\\.vscode\\compile_commands.json"
 }
