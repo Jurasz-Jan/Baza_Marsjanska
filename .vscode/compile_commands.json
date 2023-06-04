@@ -1,0 +1,7 @@
+[
+    {
+        "command": "g++ main.cpp -Wall  -std=c++17",
+        "directory": "C:\\Users\\PK\\Documents\\Projekty\\Cpp\\baza_marsjanska\\Baza_Marsjanska",
+        "file": "C:\\Users\\PK\\Documents\\Projekty\\Cpp\\baza_marsjanska\\Baza_Marsjanska\\main.cpp"
+    }
+]

@@ -11,7 +11,7 @@ int main()
 
 	//MAIN LOOP
 	//-------------------------------------------
-	while (1)
+	while (true)
 	{
 		//here goes genetic algorithm
 	}

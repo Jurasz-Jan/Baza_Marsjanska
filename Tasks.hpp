@@ -6,10 +6,10 @@
 
 class TaskGraph
 {
-
+// halo
 };
 
 class Task
 {
-
+// halo dzień dobry, komenda policji w żarach
 };

@@ -1,11 +1,28 @@
 #pragma once
 #include <stdexcept>
-#include <vector>
 #include <string>
+#include <vector>
 
 class Enum
 {
-	//id is just by position within vector
+public:
+	unsigned int GetSize() { return label.size(); }
+
+	unsigned int GetId(std::string name)
+	{
+		unsigned int labelSize = label.size();
+		for (unsigned int i = 0; i < labelSize; ++i)
+		{
+			if (CompareLabels(label[i], name))
+			{
+				return i;
+			}
+		}
+		throw std::out_of_range("label " + name + " does not exists within current enum");
+	}
+
+private:
+	// id is just by position within vector
 	std::vector<std::string> label;
 
 private:
@@ -25,27 +42,8 @@ private:
 		}
 		return true;
 	}
-
-public:
-	unsigned int GetSize()
-	{
-		return label.size();
-	}
-
-	unsigned int GetId(std::string name)
-	{
-		unsigned int labelSize = label.size();
-		for (unsigned int i = 0; i < labelSize; ++i)
-		{
-			if (CompareLabels(label[i], name))
-			{
-				return i;
-			}
-		}
-		throw std::out_of_range("label " + name + " does not exists within current enum");
-	}
 };
 
-//here defines global enums for usage within classes
+// here defines global enums for usage within classes
 Enum HabitatType;
 Enum ChannelType;
