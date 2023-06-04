@@ -19,22 +19,24 @@
 std::random_device rd;
 std::mt19937 gen(rd());
 
-    
+
 const int POPULATION_SIZE = 50;
 const int MAX_GENERATIONS = 100;
 const double MUTATION_RATE = 0.1;
 const double CROSSOVER_RATE = 0.8;
-const int MAX_CHROMOSOME_SIZE = 10;
+const int MAX_CHROMOSOME_SIZE = 10; //also 
 
 
 
 class BaseManager
-{
+{ 
 	//HabitatDatabase* database;
 
 	std::vector<Habitat> habitats;
-	std::vector<Individual> population;
+	
 	std::vector<std::pair<int, int>> chromosome;
+    std::vector<Channel> channels;
+
 	
 	
 class Individual
@@ -47,7 +49,7 @@ public:
 };
 	
 
-
+std::vector<Individual> population;
 
 public:
 	Habitat GetHabitat(int Id)
@@ -61,7 +63,7 @@ public:
 
 	Channel GetChannel(int Id)
 	{
-		if (Id >= channels.size())
+		if (Id >= habitats.size())
 		{
 			throw std::out_of_range("index " + std::to_string(Id) + "is out of range");
 		}
@@ -208,15 +210,14 @@ std::vector<Individual> initializePopulation(int size_of_population)
     }
 	
 	
-std::pair<Individual, Individual> selectParents(const std::vector<Individual>& population)
+std::pair<Individual, Individual> selectParents(std::vector<Individual>& population)
 {
     std::random_device rd;
     std::mt19937 gen(rd());
 
-    
     int tournamentSize = 5;
 
-    // select participants for the first tournament
+    // Select participants for the first tournament
     std::vector<Individual> participants;
     for (int i = 0; i < tournamentSize; ++i)
     {
@@ -225,16 +226,18 @@ std::pair<Individual, Individual> selectParents(const std::vector<Individual>& p
         participants.push_back(population[index]);
     }
 
-    // fnd the individual with the highest fitness in the tournament
+    // Find the individual with the highest fitness in the tournament
     Individual parent1 = *std::max_element(participants.begin(), participants.end(),
         [](const Individual& ind1, const Individual& ind2)
         {
             return ind1.fitness < ind2.fitness;
         });
 
-    
+    // Remove the selected parent from the population
+    auto parent1It = std::find(population.begin(), population.end(), parent1);
+    population.erase(parent1It);
 
-    // select participants for the second tournament from the updated population
+    // Select participants for the second tournament from the updated population
     participants.clear();
     for (int i = 0; i < tournamentSize; ++i)
     {
@@ -243,25 +246,19 @@ std::pair<Individual, Individual> selectParents(const std::vector<Individual>& p
         participants.push_back(population[index]);
     }
 
-    // find the individual with the highest fitness in the second tournament
+    // Find the individual with the highest fitness in the second tournament
     Individual parent2 = *std::max_element(participants.begin(), participants.end(),
         [](const Individual& ind1, const Individual& ind2)
         {
             return ind1.fitness < ind2.fitness;
         });
-        
-    // remove the selected parent from the population
-    auto parent1It = std::find(population.begin(), population.end(), parent1);
-    population.erase(parent1It);    
-    //auto parent2It = std::find(population.begin(), population.end(), parent2);
-    population.erase(parent1It);
+
+    // Remove the selected parent from the population
+    auto parent2It = std::find(population.begin(), population.end(), parent2);
+    population.erase(parent2It);
 
     return std::make_pair(parent1, parent2);
 }
-
-
-  
-	
 	
    std::vector<Individual> generateNewPopulation(const std::vector<Individual> &population)
     {
@@ -282,37 +279,35 @@ std::pair<Individual, Individual> selectParents(const std::vector<Individual>& p
     }
 
 	
-	
-	void runGeneticAlgorithm()
+	Individual runGeneticAlgorithm()
+{
+    BaseManager baseManager;
+
+    std::vector<Individual> population = initializePopulation();
+    evaluatePopulation(population);
+    int generation = 0;
+    while (generation < MAX_GENERATIONS)
     {
+        std::vector<Individual> newPopulation = generateNewPopulation(population);
+        evaluatePopulation(newPopulation);
+        // Replacing the population
+        population = newPopulation;
 
-        std::vector<Individual> population = initializePopulation();
-        evaluatePopulation(population);
-        int generation = 0;
-        while (generation < MAX_GENERATIONS)
-        {
-            
-            std::vector<Individual> newPopulation = generateNewPopulation(population);
-            evaluatePopulation(newPopulation);
-            // Replacing the population
-            population = newPopulation;
-
-            ++generation;
-        }
-
-        // Selecting fittest one
-        Individual bestIndividual = population[0];
-        for (const auto &individual : population)
-        {
-            if (individual.fitness > bestIndividual.fitness)
-            {
-                bestIndividual = individual;
-            }
-        }
-
-        
+        ++generation;
     }
-};
+
+    // Selecting fittest one
+    Individual bestIndividual = population[0];
+    for (const auto &individual : population)
+    {
+        if (individual.fitness > bestIndividual.fitness)
+        {
+            bestIndividual = individual;
+        }
+    }
+    
+    return bestIndividual;
+}
 
 
 private:
@@ -320,4 +315,9 @@ private:
 	{
 
 	}
-};
+}
+
+
+
+
+
