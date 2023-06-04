@@ -24,7 +24,7 @@ template <typename T>
 class WeightedGraph
 {
 public:
-	std::vector<WeightedGraphEdge<T>> > &operator[](const T& vertex) { return vertexMap[vertex]; }
+	std::vector<WeightedGraphEdge<T>>& operator[](const T& vertex) { return vertexMap[vertex]; }
 
 	auto begin() const { return vertexMap.begin(); }
 	auto end() const { return vertexMap.end(); }
@@ -34,13 +34,6 @@ public:
 	// It can't happen there though.
 	void addEdge(const T& from, const T& to, int weight)
 	{
-		// TODO: copypaste from my different program, keeping it here but should be removed.
-		// // if we don't already have this connection
-		//// if (std::find(vertexMap[from].begin(), vertexMap[from].end(), to) == vertexMap[from].end())
-		//// 	vertexMap[from].push_back(to);
-
-		// // otherwise do nothing
-
 		// if we don't already have this connection
 		if (!hasConnection(from, to))
 		{
@@ -64,11 +57,11 @@ public:
 	{
 		if (hasConnection(from, to))
 		{
-			for (auto& edge : from.second)
+			for (auto& edge : vertexMap[from])
 			{
 				if (edge.to == to)
 				{
-					from.second.erase(edge);
+					vertexMap[from].erase(edge);
 					break;
 				}
 			}
@@ -118,7 +111,7 @@ public:
 		if (!hasConnection(from, to))
 			return -1;
 
-		for (const auto& edge : VertexMap[from].second)
+		for (const auto& edge : vertexMap[from].second)
 		{
 			if (edge.to == to)
 				return edge.weight;
@@ -127,19 +120,14 @@ public:
 		return -1;  // just 2B sure
 	}
 
-	bool hasVertex(const T& vertex) const
-	{
-		if (vertexMap.find(vertex) == vertexMap.end())
-			return false;
-		return true;
-	}
+	bool hasVertex(const T& vertex) const { return vertexMap.find(vertex) != vertexMap.end(); }
 
 	bool hasConnection(const T& from, const T& to) const
 	{
 		if (!hasVertex(from))
 			return false;
 
-		for (const auto& edge : VertexMap[from].second)
+		for (const auto& edge : vertexMap[from].second)
 		{
 			if (edge.to == to)
 				return true;
@@ -187,7 +175,7 @@ public:
 			const std::vector<WeightedGraphEdge<T>>& edges = pair.second;
 
 			std::cout << "Vertex " << vertex << " is connected to:\n";
-			for (const WeightedGraphEdge<T>& edge : edges)
+			for (const auto& edge : edges)
 			{
 				std::cout << "  -> to: " << edge.to << ", Weight: " << edge.weight << "\n";
 			}
@@ -199,7 +187,7 @@ public:
 	//*   SEARCHING
 	//* -------------
 
-	//TODO: everything (if it will be ever needed, let me know).
+	// TODO: everything (if it will be ever needed, let me know).
 
 private:
 	std::unordered_map<T, std::vector<WeightedGraphEdge<T>>> vertexMap;
