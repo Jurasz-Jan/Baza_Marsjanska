@@ -122,12 +122,12 @@ public:
 
 	bool hasVertex(const T& vertex) const { return vertexMap.find(vertex) != vertexMap.end(); }
 
-	bool hasConnection(const T& from, const T& to) const
+	bool hasConnection(const T& from, const T& to)
 	{
 		if (!hasVertex(from))
 			return false;
 
-		for (const auto& edge : vertexMap[from].second)
+		for (const auto& edge : vertexMap[from])
 		{
 			if (edge.to == to)
 				return true;
