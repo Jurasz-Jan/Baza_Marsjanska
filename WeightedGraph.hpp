@@ -4,14 +4,14 @@
 #include <unordered_map>
 #include <vector>
 
-template <typename T>
+template <typename T, typename W>
 struct WeightedGraphEdge
 {
 	T from;
 	T to;
-	int weight;
+	W weight;
 
-	WeightedGraphEdge(const T& _from, const T& _to, int _weight) : from(_from), to(_to), weight(_weight) {}
+	WeightedGraphEdge(const T& _from, const T& _to, const W& _weight) : from(_from), to(_to), weight(_weight) {}
 };
 
 // ||--------------------------------------------------------------------------------||
@@ -20,11 +20,11 @@ struct WeightedGraphEdge
 //
 // !! important
 // let me know if you need any more functionality, will be happy to help
-template <typename T>
+template <typename T, typename W>
 class WeightedGraph
 {
 public:
-	std::vector<WeightedGraphEdge<T>> > &operator[](const T& vertex) { return vertexMap[vertex]; }
+	std::vector<WeightedGraphEdge<T, W>>& operator[](const T& vertex) { return vertexMap[vertex]; }
 
 	auto begin() const { return vertexMap.begin(); }
 	auto end() const { return vertexMap.end(); }
@@ -32,19 +32,12 @@ public:
 	// Doesn't allow multiple edges between same vertices.
 	// Kinda obvious, but maybe somebody would want to have different edges with different weights IDK.
 	// It can't happen there though.
-	void addEdge(const T& from, const T& to, int weight)
+	void addEdge(const T& from, const T& to, const W& weight)
 	{
-		// TODO: copypaste from my different program, keeping it here but should be removed.
-		// // if we don't already have this connection
-		//// if (std::find(vertexMap[from].begin(), vertexMap[from].end(), to) == vertexMap[from].end())
-		//// 	vertexMap[from].push_back(to);
-
-		// // otherwise do nothing
-
 		// if we don't already have this connection
 		if (!hasConnection(from, to))
 		{
-			WeightedGraphEdge<T> edge(from, to, weight);
+			WeightedGraphEdge<T, W> edge(from, to, weight);
 			vertexMap[from].push_back(edge);
 		}
 		// otherwise do nothing
@@ -52,7 +45,7 @@ public:
 		// if the "to" vertex doesn't already exist, create one without any connections.
 		if (!hasVertex(to))
 		{
-			std::vector<WeightedGraphEdge<T>> > dummy;
+			std::vector<WeightedGraphEdge<T, W>> dummy;
 			vertexMap[to] = dummy;
 		}
 	}
@@ -64,11 +57,11 @@ public:
 	{
 		if (hasConnection(from, to))
 		{
-			for (auto& edge : from.second)
+			for (auto& edge : vertexMap[from])
 			{
 				if (edge.to == to)
 				{
-					from.second.erase(edge);
+					vertexMap[from].erase(edge);
 					break;
 				}
 			}
@@ -100,9 +93,9 @@ public:
 		return children;
 	}
 
-	std::vector<T> getWeights(const T& parentVertex) const
+	std::vector<W> getWeights(const T& parentVertex) const
 	{
-		std::vector<T> weights;
+		std::vector<W> weights;
 
 		for (const auto& edge : vertexMap[parentVertex].second)
 		{
@@ -118,7 +111,7 @@ public:
 		if (!hasConnection(from, to))
 			return -1;
 
-		for (const auto& edge : VertexMap[from].second)
+		for (const auto& edge : vertexMap[from].second)
 		{
 			if (edge.to == to)
 				return edge.weight;
@@ -127,19 +120,14 @@ public:
 		return -1;  // just 2B sure
 	}
 
-	bool hasVertex(const T& vertex) const
-	{
-		if (vertexMap.find(vertex) == vertexMap.end())
-			return false;
-		return true;
-	}
+	bool hasVertex(const T& vertex) const { return vertexMap.find(vertex) != vertexMap.end(); }
 
-	bool hasConnection(const T& from, const T& to) const
+	bool hasConnection(const T& from, const T& to)
 	{
 		if (!hasVertex(from))
 			return false;
 
-		for (const auto& edge : VertexMap[from].second)
+		for (const auto& edge : vertexMap[from])
 		{
 			if (edge.to == to)
 				return true;
@@ -155,9 +143,9 @@ public:
 
 		for (const auto& pair : vertexMap)
 		{
-			const std::vector<WeightedGraphEdge<T>>& edges = pair.second;
+			const std::vector<WeightedGraphEdge<T, W>>& edges = pair.second;
 
-			for (const WeightedGraphEdge<T>& edge : edges)
+			for (const WeightedGraphEdge<T, W>& edge : edges)
 			{
 				if (edge.to == vertex)
 					return false;
@@ -183,11 +171,11 @@ public:
 	{
 		for (const auto& pair : vertexMap)
 		{
-			const T& vertex                                = pair.first;
-			const std::vector<WeightedGraphEdge<T>>& edges = pair.second;
+			const T& vertex                                   = pair.first;
+			const std::vector<WeightedGraphEdge<T, W>>& edges = pair.second;
 
 			std::cout << "Vertex " << vertex << " is connected to:\n";
-			for (const WeightedGraphEdge<T>& edge : edges)
+			for (const auto& edge : edges)
 			{
 				std::cout << "  -> to: " << edge.to << ", Weight: " << edge.weight << "\n";
 			}
@@ -199,8 +187,8 @@ public:
 	//*   SEARCHING
 	//* -------------
 
-	//TODO: everything (if it will be ever needed, let me know).
+	// TODO: everything (if it will be ever needed, let me know).
 
 private:
-	std::unordered_map<T, std::vector<WeightedGraphEdge<T>>> vertexMap;
+	std::unordered_map<T, std::vector<WeightedGraphEdge<T, W>>> vertexMap;
 };
