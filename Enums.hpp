@@ -6,6 +6,9 @@
 class Enum
 {
 public:
+	friend class FileInterpreter; //again it is good practice, believe me
+	//this way while reading the file we can change enums, but nowhere else
+
 	unsigned int GetSize() { return label.size(); }
 
 	unsigned int GetId(std::string name)
@@ -45,5 +48,6 @@ private:
 };
 
 // here defines global enums for usage within classes
+Enum TaskFile;
 Enum HabitatType;
 Enum ChannelType;
