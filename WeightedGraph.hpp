@@ -167,7 +167,7 @@ public:
 	//* -------------
 	//*   PRINTING
 	//* -------------
-	void printGraph()
+	void printGraph() const
 	{
 		for (const auto& pair : vertexMap)
 		{

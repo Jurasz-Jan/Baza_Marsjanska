@@ -17,15 +17,15 @@ struct ChannelConnection
 struct Channel
 {
 public:
-	Channel(std::vector<ChannelConnection> connections) : connections(std::move(connections)) {}
+	explicit Channel(std::vector<ChannelConnection> connections) : connections(std::move(connections)) {}
 
 	// is neccesarry?
 	void AddConnection(ChannelConnection newConnection) { connections.push_back(newConnection); }
 
-	void ReplaceConnections(std::vector<ChannelConnection> newConnections) { connections = newConnections; }
+	void ReplaceConnections(const std::vector<ChannelConnection>& newConnections) { connections = newConnections; }
 
 	// for mutation
-	void ChangeConnection(ChannelConnection newConnection, int id)
+	void ChangeConnection(const ChannelConnection& newConnection, int id) const
 	{
 		if (id >= connections.size())
 		{
@@ -48,22 +48,20 @@ class Habitat
 public:
 	std::vector<Channel*> comTunnel;
 
-	Habitat(std::string name)
+	explicit Habitat(const std::string& name)
 	{
 		try
 		{
 			type = HabitatType.GetId(name);
-		}
-		catch (const std::out_of_range& message)
+		} catch (const std::out_of_range& message)
 		{
 			type = 0;
 			std::cout << message.what() << std::endl;
 		}
 	}
 
-	Habitat(int id)
+	explicit Habitat(int id) : type(id)
 	{
-		type = id;
 		if (id >= HabitatType.GetSize())
 		{
 			type = 0;
