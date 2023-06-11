@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "Enums.hpp"
+#include "Tasks.hpp"
 
 struct ChannelConnection
 {
@@ -16,35 +17,15 @@ struct ChannelConnection
 struct Channel
 {
 public:
-	Channel(std::vector<ChannelConnection> connections, int id) : connections(std::move(connections))
-	{
-		type = id;
-		if (id >= HabitatType.GetSize())
-		{
-			type = 0;
-			std::cout << "id: " << id << " is outside of enum's range" << std::endl;
-		}
-	}
-
-	Channel(std::vector<ChannelConnection> connections, std::string name) : connections(std::move(connections))
-	{
-		try
-		{
-			type = ChannelType.GetId(name);
-		} catch (const std::out_of_range& message)
-		{
-			type = 0;
-			std::cout << message.what() << std::endl;
-		}
-	}
+	explicit Channel(std::vector<ChannelConnection> connections) : connections(std::move(connections)) {}
 
 	// is neccesarry?
 	void AddConnection(ChannelConnection newConnection) { connections.push_back(newConnection); }
 
-	void ReplaceConnections(std::vector<ChannelConnection> newConnections) { connections = newConnections; }
+	void ReplaceConnections(const std::vector<ChannelConnection>& newConnections) { connections = newConnections; }
 
 	// for mutation
-	void ChangeConnection(ChannelConnection newConnection, int id)
+	void ChangeConnection(const ChannelConnection& newConnection, int id) const
 	{
 		if (id >= connections.size())
 		{
@@ -52,76 +33,40 @@ public:
 		}
 	}
 
-	unsigned int GetType()
-	{
-		return type;
-	}
-
-	friend bool operator==(Channel& ch1, Channel& ch2)
-	{
-		if (ch1.GetType() == ch2.GetType())
-		{
-			return true;
-		}
-		return false;
-	}
-
 private:
-	unsigned int type;
+	double comSpeed;
+	double comCost;
+	// double buildCost; //maybe?
+
 	std::vector<ChannelConnection> connections;
+	// isn't it better to just have in out ID's here?
+	// wait, it does not... it would be harder to work with
 };
 
 class Habitat
 {
 public:
-	bool tasksRedistributed = false;
-	///---------------------------
-	double taskPercentage;
-	std::vector<int> takenTasks; //by task id
-	std::vector<int> comChannels;
-	//--------------------------------
+	std::vector<Channel*> comTunnel;
 
-	bool isWorking = false;
-	int taskInWork = -1; //-1 means no task currently done
-	std::vector<int> comInWork = std::vector<int>(); //-1 means no com
-	std::vector<double> workTimeLeft = std::vector<double>();
-
-	Habitat(std::string name) : taskPercentage(1), takenTasks(std::vector<int>()), comChannels(std::vector<int>())
+	explicit Habitat(const std::string& name)
 	{
 		try
 		{
 			type = HabitatType.GetId(name);
-		}
-		catch (const std::out_of_range& message)
+		} catch (const std::out_of_range& message)
 		{
 			type = 0;
 			std::cout << message.what() << std::endl;
 		}
 	}
 
-	Habitat(int id)
+	explicit Habitat(int id) : type(id)
 	{
-		taskPercentage = 1;
-		type = id;
 		if (id >= HabitatType.GetSize())
 		{
 			type = 0;
 			std::cout << "id: " << id << " is outside of enum's range" << std::endl;
 		}
-	}
-
-	int GetType()
-	{
-		return type;
-	}
-
-	bool operator==(Habitat& hab2)
-	{
-		if (type == hab2.GetType())
-		{
-			return true;
-		}
-		return false;
 	}
 
 private:
@@ -137,10 +82,9 @@ class HabitatDatabase
 {
 public:
 	friend int main();  // YEAH, I KNOW WHAT I AM DOING --ADAM
-	friend class FileInterpreter;
 
 private:
-	// per habitat type
+	// per habitat
 	std::vector<double> habitatBuildCost;
 	std::vector<std::vector<int>> habitatTasks;  // by tasks type
 	// for task per habitat
@@ -153,12 +97,8 @@ private:
 	std::vector<double> channelComCost;
 
 	// per task (defaults):
-	//these aren't needed here
 	std::vector<double> taskTime;
 	std::vector<double> taskCost;
-
-	//defined max channelSpeed so can be used in taskGraph
-	double maxChannelSpeed;
 
 public:
 	// a whole lot of getters:
@@ -167,8 +107,6 @@ public:
 	double ChannelBuildCost(int type) { return channelBuildCost[type]; }
 	double ChannelSpeed(int type) { return channelSpeed[type]; }
 	double ChannelComCost(int type) { return channelComCost[type]; }
-	
-	double MaxChannelSpeed() { return maxChannelSpeed; }
 	// task
 	double TaskTime(int type) { return taskTime[type]; }
 	double TaskCost(int type) { return taskCost[type]; }
@@ -191,6 +129,10 @@ public:
 	// bool is here only so that overloading compiles
 	double HabitatTaskTime(int habType, int taskId, bool byId)
 	{
+		if (taskId < 0 || taskId < habitatTaskTimes[habType].size())  // general purpouse
+		{
+			return taskTime[habitatTasks[habType][taskId]];
+		}
 		return habitatTaskTimes[habType][taskId];
 	}
 
@@ -201,6 +143,10 @@ public:
 
 	double HabitatTaskCost(int habType, int taskId, bool byId)
 	{
+		if (taskId < 0 || taskId < habitatTaskCosts[habType].size())  // general purpouse
+		{
+			return taskCost[habitatTasks[habType][taskId]];
+		}
 		return habitatTaskCosts[habType][taskId];
 	}
 
@@ -215,5 +161,4 @@ public:
 };
 
 // like I said, singleton, also global
-HabitatDatabase BaseData;
-
+HabitatDatabase mainBaseData;
