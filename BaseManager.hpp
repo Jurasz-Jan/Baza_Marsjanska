@@ -4,7 +4,6 @@
 #include "Base.hpp"
 #include "Task.hpp"
 
-
 //"manager" is kind of class
 //that well manages some sort of objects
 //and that's it
@@ -14,27 +13,20 @@ class BaseManager
 {
 public:
     friend int main();
-private:
-    class Individual
-    {
-    public:
-        std::vector<int> chromosome;
-        double fitness;
-
-        Individual(std::vector<int> chromosome) : chromosome(chromosome), fitness(0.0) {}
-    };
-
+protected:
     std::vector<Habitat> habitats;
-    std::vector<Channel> channels;
-    std::vector<Individual> population;
-    std::vector<std::pair<int, int>> chromosome;
-
+private:
     //for doing task graph
     std::vector<bool> taskTaken;
     std::vector<int> taskNeeds;
     std::vector<Habitat*> workingHabitats;
 
 public:
+    int HabitatsSize()
+    {
+        return habitats.size();
+    }
+
     Habitat GetHabitat(int Id)
     {
         if (Id > habitats.size())
@@ -44,32 +36,41 @@ public:
         return habitats[Id];
     }
 
-    Channel GetChannel(int Id)
-    {
-        if (Id >= channels.size())
-        {
-            throw std::out_of_range("index " + std::to_string(Id) + "is out of range");
-        }
-        return channels[Id];
-    }
-
     void AddHabitat(Habitat newHabitat)
     {
         habitats.push_back(newHabitat);
     }
 
-    void AddChannel(Channel newChannel)
-    {
-        channels.push_back(newChannel);
-    }
-
-
     //here stuff with whole task graph understanding
 
-    //schould have alt version with debug couts
-    std::pair<double, double> DoTaskGraph()
+    double CalculateGlobalCost()
     {
-        //com channels ignored for now
+        double globalCost = 0;
+        //build cost of habs and channels
+        for (int i = 0; i < habitats.size(); ++i)
+        {
+            globalCost += BaseData.HabitatBuildCost(habitats[i].GetType());
+            for (int j = 0; j < habitats[i].comChannels.size(); ++j)
+            {
+                globalCost += BaseData.ChannelBuildCost(habitats[i].comChannels[j]);
+            }
+        }
+        //cost of doing tasks
+        //*
+        for (int i = 0; i < habitats.size(); ++i)
+        {
+            for (int j = 0; j < habitats[i].takenTasks.size(); ++j)
+            {
+                globalCost += BaseData.HabitatTaskCost(habitats[i].GetType(), 0, true);
+            }
+        }
+        //*/
+        return globalCost;
+    }
+
+    //schould have alt version with debug couts
+    double DoTaskGraph()
+    {
         //first create indicators
         taskTaken.clear();
         taskNeeds.clear(); //positive means unreachable
@@ -90,7 +91,7 @@ public:
         }
 
         //debug:
-        std::cout << "work doin test" << std::endl;
+        std::cout << "started doing task graph" << std::endl;
         for (int i = 0; i < size; ++i)
         {
             std::cout << taskNeeds[i] << std::endl;
@@ -109,6 +110,13 @@ public:
                     possibleTasks.push_back(i);
                 }
             }
+            //debug
+            std::cout << "possible tasks" << std::endl;
+            for (int i = 0; i < possibleTasks.size(); ++i)
+            {
+                std::cout << possibleTasks[i] << "";
+            }
+            std::cout << std::endl;
 
             if (possibleTasks.size() == 1) //only one, so only one can be done
             {
@@ -117,7 +125,15 @@ public:
                 
                 if (!habitats[hab].isWorking)
                 {
-                    StartWorking(&(habitats[hab]), possibleTasks[0]);
+                    try
+                    {
+                        StartWorking(&(habitats[hab]), possibleTasks[0]);
+                    }
+                    catch (std::string message)
+                    {
+                        std::cout << message << std::endl;
+                        return -1;
+                    }
                 }
             }
             else if (possibleTasks.size() > 1)
@@ -125,15 +141,22 @@ public:
                 //NO CHOOSING LONGEST TASK FOR NOW!!!!!
                 std::vector<int> habs = FindHabitatForTask(possibleTasks);
                 std::cout << "multi hab" << std::endl;
-                //if 2 or more are by same hab, then find longest route
 
-                //else do this:
                 //for now not choosing longest route
+                //if 2 or more tasks by same hab he just chooses first from left
                 for (int i = 0; i < possibleTasks.size(); ++i)
                 {
                     if (!habitats[habs[i]].isWorking)
                     {
-                        StartWorking(&(habitats[habs[i]]), possibleTasks[i]);
+                        try
+                        {
+                            StartWorking(&(habitats[habs[i]]), possibleTasks[i]);
+                        }
+                        catch (std::string message)
+                        {
+                            std::cout << message << std::endl;
+                            return -1;
+                        }
                     }
                 }
 
@@ -149,17 +172,12 @@ public:
 
         //*/
         std::cout << globalTime << std::endl;
-        return std::pair<double, double>(globalTime, 0);
+        return globalTime;
     }
 
 private:
     void StartWorking(Habitat* hab, int possibleTask)
     {
-        /*
-        std::cout << hab << std::endl;
-        std::cout << habitats.size() << std::endl;
-        std::cout << habitats[hab].GetType() << std::endl;
-        */
         std::cout << "current task" << std::endl;
         std::cout << possibleTask << std::endl;
         //start working
@@ -167,7 +185,6 @@ private:
         hab->isWorking = true;
         hab->taskInWork = possibleTask;
         std::cout << BaseData.HabitatTaskTime(hab->GetType(), possibleTask, true) << std::endl;
-        //hab->workTimeLeft = BaseData.HabitatTaskTime(hab->GetType(), possibleTask, true);
 
         //first work is doing task, rest is doing communication
         hab->workTimeLeft.clear();
@@ -176,7 +193,14 @@ private:
         hab->comInWork.push_back(-1);
         for (int i = 0; i < taskGraph[possibleTask].children.size(); ++i)
         {
-            hab->workTimeLeft.push_back(GetComTime((*hab), habitats[FindHabitatForTask(possibleTask)]));
+            try
+            {
+                hab->workTimeLeft.push_back(GetComTime((*hab), habitats[FindHabitatForTask(possibleTask)]));
+            }
+            catch (std::string message)
+            {
+                throw message;
+            }
             hab->comInWork.push_back(i);
         }
 
@@ -240,8 +264,6 @@ private:
         //std::cout << "job done " << quickestJob << std::endl;
         if (doneJob < 0) //ending task directly
         {
-            //quickestJob = 0;
-            //minHabTime = 
             std::cout << "there" << std::endl;
         }
         else //ending communication
@@ -327,4 +349,5 @@ private:
         }
         return res;
     }
+
 };
