@@ -9,9 +9,9 @@ public:
 	friend class FileInterpreter; //again it is good practice, believe me
 	//this way while reading the file we can change enums, but nowhere else
 
-	unsigned int GetSize() { return label.size(); }
+	unsigned int GetSize() const { return label.size(); }
 
-	unsigned int GetId(std::string name)
+	unsigned int GetId(const std::string& name)
 	{
 		unsigned int labelSize = label.size();
 		for (unsigned int i = 0; i < labelSize; ++i)
@@ -29,7 +29,7 @@ private:
 	std::vector<std::string> label;
 
 private:
-	bool CompareLabels(std::string org, std::string other)
+	bool CompareLabels(std::string org, std::string other) const
 	{
 		unsigned int orgSize = org.size();
 		if (orgSize != other.size())
