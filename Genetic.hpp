@@ -3,64 +3,75 @@
 #include "Randomizer.hpp"
 
 //wrapper for base manager
-class GeneticAlgorithm: public BaseManager
+class GeneticAlgorithm : public BaseManager
 {
 public:
-	//0 habitat is always root
-	std::vector<int> parents;
+//0 habitat is always root
+std::vector<int> parents;
 
 public:
+Habitat StartGeneticAlgorithm(BaseManager _base)
+{
+parents = std::vector<int>();
+//at start relation is ->->->->->
+for (int i = 0; i < habitats.size(); ++i)
+{
+parents.push_back(i - 1);
+}
+}
 
-	GeneticAlgorithm(BaseManager _base)
-	{
-		parents = std::vector<int>();
-		//at start relation is ->->->->->
-		for (int i = 0; i < habitats.size(); ++i)
-		{
-			parents.push_back(i - 1);
-		}
-	}
+void MutateParents(std::vector<int>& parents)
+{
+    std::uniform_int_distribution<> indexDis(0, parents.size() - 1);
+    int i = indexDis(gen);
 
-	void RedistributeTasks()
-	{
-		//clear last tasks settings
-		for (int i = 0; i < parents.size(); ++i)
-		{
-			habitats[i].takenTasks.clear();
-			habitats[i].tasksRedistributed = false;
-		}
-		//root has always all tasks at start
-		for (int i = 0; i < taskGraph.size(); ++i)
-		{
-			habitats[0].takenTasks.push_back(i);
-		}
-		habitats[0].tasksRedistributed = true;
+    std::uniform_int_distribution<> valueDis(0, parents.size() - 1);
+    int randomValue = valueDis(gen);
 
-		//redistributing
-		for (int i = 1; i < parents.size(); ++i)
-		{
-			int fakeReq = i;
-			while (habitats[parents[fakeReq]].tasksRedistributed == false)
-			{
-				
-			}
-		}
-	}
+    while (randomValue == i)
+    {
+        randomValue = valueDis(gen);
+    }
 
-	void RedistributeTasksInner(int hab)
-	{
-		if (habitats[parents[hab]].tasksRedistributed == false)
-		{
-			RedistributeTasksInner(parents[hab]);
-		}
-		//actual redistribution
-	}
+    parents[i] = randomValue;
+}
 
-	//crossing on tree relation
+void RedistributeTasks()
+{
+    for (int i = 0; i < parents.size(); ++i)
+    {
+        habitats[i].takenTasks.clear();
+        habitats[i].tasksRedistributed = false;
+    }
+    //root has always all tasks at start
+    for (int i = 0; i < taskGraph.size(); ++i)
+    {
+        habitats[0].takenTasks.push_back(i);
+    }
+    habitats[0].tasksRedistributed = true;
 
-	//crossing on channels
+    //redistributing
+    for (int i = 1; i < parents.size(); ++i)
+    {
+        RedistributeTasksInner(i);
+    }
+}
 
-	//mutation on task percentage
+void RedistributeTasksInner(int hab)
+{
+    if (habitats[parents[hab]].tasksRedistributed == false)
+    {
+        RedistributeTasksInner(parents[hab]);
+    }
+    //actual redistribution
+    habitats[hab].takenTasks = habitats[parents[hab]].takenTasks;
+    habitats[hab].tasksRedistributed = true;
+}
 
-	//mutation on channels
-};
+//crossing on tree relation
+
+//crossing on channels
+
+//mutation on task percentage
+
+//mutation on channels
