@@ -41,7 +41,7 @@ private:
 		for (int i = 1; i < data->size(); i += 2)
 		{
 			taskGraph[last].children.push_back(std::stoi((*data)[i]));
-			taskGraph[last].dataToTransfer.push_back(std::stod((*data)[i]));
+			taskGraph[last].dataToTransfer.push_back(std::stod((*data)[i + 1]));
 		}
 	}
 
@@ -113,7 +113,7 @@ int main()
 {
 	//START
 	//------------------------------------------
-	BaseManager mainBase;
+	GeneticAlgorithm mainBase;
 	//here setup for database and enums
 
 	//LOAD FILE
@@ -160,10 +160,12 @@ int main()
 	std::cout << "taskGraph check: " << std::endl;
 	for (int i = 0; i < taskGraph.size(); ++i)
 	{
-		for (int j = 0; j < taskGraph[i].children.size(); ++i)
+		std::cout << i << ": ";
+		for (int j = 0; j < taskGraph[i].children.size(); ++j)
 		{
-			std::cout << taskGraph[i].children[j] << std::endl;
+			std::cout << taskGraph[i].children[j] << " ";
 		}
+		std::cout << std::endl;
 	}
 
 	//defines for later use
@@ -310,20 +312,39 @@ int main()
 	//return 0;
 
 	//test check if doing task graph works:
-	double tasksTime = mainBase.DoTaskGraph();
-	std::cout << "base time completion: " << tasksTime << std::endl;
-	std::cout << "base total cost: " << mainBase.CalculateGlobalCost() << std::endl;
+	//double tasksTime = mainBase.CalculateGlobalTime();
+	//std::cout << "base time completion: " << tasksTime << std::endl;
+	//std::cout << "base total cost: " << mainBase.CalculateGlobalCost() << std::endl;
 
 
 	//MAIN LOOP
 	//-------------------------------------------
-	/*
+	std::cout << "gen" << std::endl;
+	mainBase.RedistributeTasks();
+	for (int i = 0;i < mainBase.habitats.size(); ++i)
+	{
+		std::cout << "percent " << mainBase.habitats[i].taskPercentage << " ";
+		for (int j = 0; j < mainBase.habitats[i].takenTasks.size(); ++j)
+		{
+			std::cout << mainBase.habitats[i].takenTasks[j] << " ";
+		}
+	}
+	std::cout << std::endl;
+	return 0;
 	while (true)
 	{
 		//here goes genetic algorithm
 
 		//-----------------------------------
 		//quality check
+		mainBase.Crossover();
+		mainBase.MutateHabitat();
+		mainBase.MutateParents();
+		//*
+		for (int i = 0; mainBase.habitats.size(); ++i)
+		{
+			std::cout << mainBase.habitats[i].taskPercentage << std::endl;
+		}
+		//*/
 	}
-	*/
 }
