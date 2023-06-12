@@ -36,7 +36,7 @@ public:
         return habitats[Id];
     }
 
-    virtual void AddHabitat(Habitat newHabitat)
+    void AddHabitat(Habitat newHabitat)
     {
         habitats.push_back(newHabitat);
     }

@@ -163,6 +163,7 @@ private:
 public:
 	// a whole lot of getters:
 	double HabitatBuildCost(int type) { return habitatBuildCost[type]; }
+	std::vector<int> HabitatTasks(int habType) { return habitatTasks[habType]; }
 	// channel
 	double ChannelBuildCost(int type) { return channelBuildCost[type]; }
 	double ChannelSpeed(int type) { return channelSpeed[type]; }
@@ -216,4 +217,3 @@ public:
 
 // like I said, singleton, also global
 HabitatDatabase BaseData;
-

@@ -213,9 +213,9 @@ public:
     */
 
 
-    //jak robiÄ‡ geneticalgorithm
+    //jak robiæ geneticalgorithm
     //Crossover(SelectionWorst,SelectionNext)
     //Mutate()
     //thats all folks
-    //ChannelType.GetSize()//zwraca iloÅ›Ä‡ kanaÅ‚Ã³w komunikacyjnych
+    //ChannelType.GetSize()//zwraca iloœæ kana³ów komunikacyjnych
 };
