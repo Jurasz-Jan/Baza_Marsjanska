@@ -21,7 +21,7 @@ parents.push_back(i - 1);
 }
 
 
-void MutateParents(std::vector<int>& parents)
+void MutateParents(std::vector<int>& parents)  //niepotrzebne
 {
     
 
@@ -153,3 +153,21 @@ void RedistributeTasksInner(int hab)
     habitats[hab].takenTasks = habitats[parents[hab]].takenTasks;
     habitats[hab].tasksRedistributed = true;
 }
+
+//crossing
+
+
+//crossing on channels
+
+
+
+//jak robić geneticalgorithm
+//Crossover(SelectionWorst,SelectionNext)
+//Mutate()
+//thats all folks
+//ChannelType.GetSize()//zwraca ilość kanałów komunikacyjnych
+
+
+
+
+
