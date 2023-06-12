@@ -10,7 +10,7 @@ public:
 std::vector<int> parents;
 
 public:
-Habitat StartGeneticAlgorithm(BaseManager _base)
+GeneticAlgorithm()
 {
 parents = std::vector<int>();
 //at start relation is ->->->->->
@@ -20,21 +20,107 @@ parents.push_back(i - 1);
 }
 }
 
+
 void MutateParents(std::vector<int>& parents)
 {
-    std::uniform_int_distribution<> indexDis(0, parents.size() - 1);
-    int i = indexDis(gen);
+    
 
-    std::uniform_int_distribution<> valueDis(0, parents.size() - 1);
-    int randomValue = valueDis(gen);
+    int i = RandomGenerator.RandomIntRange(1, parents.size());
+    int randomValue = RandomGenerator.RandomIntRange(0,parents.size());
 
-    while (randomValue == i)
+    while (randomValue == i)    
     {
-        randomValue = valueDis(gen);
+        randomValue = RandomGenerator.RandomIntRange(1,parents.size());
     }
 
     parents[i] = randomValue;
 }
+
+void MutateHabitat()
+{
+
+    for (int i; i<habitats.size();++i)
+    {
+        if (RandomGenerator.RandomDoublePercent() > 0.9)
+        {
+            int o=RandomGenerator.RandomIntRange(1,3);
+            if (o==1)
+                {
+                    habitats[i].taskPercentage=RandomGenerator.RandomDoublePercent();
+                    habitats[i].comChannels[RandomGenerator.RandomIntRange(0,ChannelType.GetSize())]
+                }
+        }
+    }
+}
+
+int SelectionWorst(){
+    int min_rating=habitats[0].takentasks;
+    int o=0;
+    for (int i=1; i<habitats.size();++i)
+        {
+            if(habitats[i]).takentasks<min_rating
+            {
+                o=i;
+                min_rating=habitats[i]).takentasks;
+                
+            
+            }
+        }
+        return o;//index of worst
+    }
+    
+int SelectionBest(){
+    int max_rating=habitats[0].takentasks;
+    int o=0;
+    for (int i=1; i<habitats.size();++i)
+        {
+            if(habitats[i]).takentasks>max_rating
+            {
+                o=i;
+                min_rating=habitats[i]).takentasks;
+                
+            
+            }
+        }
+        return o;//index of best
+    }
+    
+
+
+Crossover(worst,best)//call Crossover(SelectionWorst,SelectionBest)
+{
+    crossoverPoint(= RandomGenerator.RandomIntRange(0, ChannelType.GetSize()//);
+    if(RandomIntRange(1, 0)
+    {
+        for (int i = 0; i < crossoverPoint; ++i)
+            {
+                if (i < best.size())
+                {
+                    habitats[worst].comChannels[i] = habitats[best].comChannels[i];
+                }
+            }
+
+            
+    }
+
+
+    else
+    {
+        for (int i = crossoverPoint; i < habitats.size(); ++i)
+            {
+                if (i < best.size())
+                {
+                    habitats[worst].comChannels[i] = habitats[best].comChannels[i];
+                }
+            }
+
+            
+    }
+        worstTaskPercentage = (bestTaskPercentage + worstTaskPercentage) / 2;
+}
+
+
+
 
 void RedistributeTasks()
 {
@@ -67,11 +153,3 @@ void RedistributeTasksInner(int hab)
     habitats[hab].takenTasks = habitats[parents[hab]].takenTasks;
     habitats[hab].tasksRedistributed = true;
 }
-
-//crossing on tree relation
-
-//crossing on channels
-
-//mutation on task percentage
-
-//mutation on channels
