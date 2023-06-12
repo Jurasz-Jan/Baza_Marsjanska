@@ -3,7 +3,9 @@
 #include <iostream>
 #include "Base.hpp"
 #include <random>
-
+#include "Tree.hpp"
+#include "WeightedGraph.hpp" 
+#include <string>
 
 //"manager" is kind of class
 //that well manages some sort of objects
@@ -11,43 +13,92 @@
 //every "base" in abstract thinking
 //schould have exacly ONE manager
 
+//graph
+WeightedGraph<std::string, int> taskGraph;
+taskGraph.addEdge("Task A", "Task B", 2);
+taskGraph.addEdge("Task B", "Task C", 1);
 
 
 
 
-// RNG 
+
+class Individual : public Tree<int>
+{
+public:
+    int fitness;
+
+    Individual() : Tree(), fitness(0) {}
+    ~Individual() = default;
+
+    Individual(const Individual& other) : Tree(other), fitness(other.fitness) {}
+    Individual& operator=(const Individual& other)
+    {
+        if (this != &other)
+        {
+            Tree::operator=(other);
+            fitness = other.fitness;
+        }
+        return *this;
+    }
+};
+
+ void createExampleHabitats()
+    {
+        for (int i = 0; i < 10; ++i)
+        {
+            Habitat* habitat = new Habitat(std::to_string(i));
+            
+            habitats.push_back(habitat);
+        }
+    }
+
+
+
+
 std::random_device rd;
 std::mt19937 gen(rd());
 
-    
+
+int NUM_HABITATS=10;
 const int POPULATION_SIZE = 50;
 const int MAX_GENERATIONS = 100;
 const double MUTATION_RATE = 0.1;
 const double CROSSOVER_RATE = 0.8;
-const int MAX_CHROMOSOME_SIZE = 10;
+const int MAX_CHROMOSOME_SIZE = 10; 
 
 
 
 class BaseManager
-{
-	//HabitatDatabase* database;
+{ 
 
-	std::vector<Habitat> habitats;
-	std::vector<Individual> population;
-	std::vector<std::pair<int, int>> chromosome;
-	
-	
-class Individual
+    std::vector<Individual> population;
+
+class Individual : public Tree<int>
 {
 public:
-    std::vector<int> chromosome;
-    double fitness;
+    int fitness;
 
-    Individual(std::vector<int> chromosome) : chromosome(chromosome), fitness(0.0) {}
+    Individual() : Tree(), fitness(0) {}
+    ~Individual() = default;
+
+    Individual(const Individual& other) : Tree(other), fitness(other.fitness) {}
+    Individual& operator=(const Individual& other)
+    {
+        if (this != &other)
+        {
+            Tree::operator=(other);
+            fitness = other.fitness;
+        }
+        return *this;
+    }
 };
+
+
+
+
 	
 
-
+std::vector<Individual> population;
 
 public:
 	Habitat GetHabitat(int Id)
@@ -61,7 +112,7 @@ public:
 
 	Channel GetChannel(int Id)
 	{
-		if (Id >= channels.size())
+		if (Id >= habitats.size())
 		{
 			throw std::out_of_range("index " + std::to_string(Id) + "is out of range");
 		}
@@ -78,16 +129,7 @@ public:
 		channels.push_back(newChannel);
 	}
 
-/*
-	void AddIndividual(std::vector<std::vector<Channel>> newIndividual)
-	{
-		population.push_back(newIndividual);
 
-	}
-
-*/
-//LETS SUPPOSE TERE EXISTS #DEFINE NUM_HABITATS
-int NUM_HABITATS=10;
 
 std::vector<Individual> initializePopulation(int size_of_population)
 {
@@ -97,47 +139,47 @@ std::vector<Individual> initializePopulation(int size_of_population)
     for (int i = 0; i < size_of_population; ++i)
     {
         std::vector<std::pair<int, int>> connections;
-        std::vector<std::pair<int, int>> existingConnections;
+        std::vector<int> availablePoints;
 
-        // Generowanie losowych połączeń dla chromosomu
-        while (connections.size() < MAX_CHROMOSOME_SIZE)
+        // Inicjalizacja dostępnych punktów
+        for (int j = 1; j <= 10; ++j)
         {
-            std::uniform_int_distribution<int> dist(1, NUM_HABITATS); // Numery habitacji od 1 do NUM_HABITATS
-
-            int habitatA = dist(gen);
-            int habitatB = dist(gen);
-
-            
-            bool isValidConnection = true;
-
-            
-            if (habitatA == habitatB)
-            {
-                isValidConnection = false;
-            }
-
-            
-            if (std::find(existingConnections.begin(), existingConnections.end(), std::make_pair(habitatA, habitatB)) != existingConnections.end() ||
-                std::find(existingConnections.begin(), existingConnections.end(), std::make_pair(habitatB, habitatA)) != existingConnections.end())
-            {
-                isValidConnection = false;
-            }
-
-            
-            if (std::find(existingConnections.begin(), existingConnections.end(), std::make_pair(habitatB, habitatA)) != existingConnections.end())
-            {
-                isValidConnection = false;
-            }
-
-            
-            if (isValidConnection)
-            {
-                connections.emplace_back(habitatA, habitatB);
-                existingConnections.push_back(std::make_pair(habitatA, habitatB));
-            }
+            availablePoints.push_back(j);
         }
 
-        population.emplace_back(connections);
+        // Generowanie losowych połączeń dla chromosomu
+        while (availablePoints.size() > 1)
+        {
+            std::uniform_int_distribution<int> dist(0, availablePoints.size() - 1);
+            int indexA = dist(gen);
+            int pointA = availablePoints[indexA];
+            availablePoints.erase(availablePoints.begin() + indexA);
+
+            int indexB = dist(gen);
+            int pointB = availablePoints[indexB];
+            availablePoints.erase(availablePoints.begin() + indexB);
+
+            connections.emplace_back(pointA, pointB);
+        }
+
+        // Dodanie ostatniego punktu z dostępnych jako korzenia drzewa
+        int lastPoint = availablePoints[0];
+        connections.emplace_back(0, lastPoint);
+
+        // Sprawdzenie, czy drzewo zostało poprawnie zbudowane
+        std::vector<int> connectedPoints(availablePoints.begin(), availablePoints.end());
+        connectedPoints.push_back(lastPoint);
+
+        if (connectedPoints.size() == 10)
+        {
+            
+            population.emplace_back(connections);
+        }
+        else
+        {
+            // Jeżeli drzewo nie jest poprawne, powtarzamy generowanie populacji
+            i--;
+        }
     }
 
     return population;
@@ -146,51 +188,24 @@ std::vector<Individual> initializePopulation(int size_of_population)
 
 
 
+
+
     
     void mutate(Individual &individual)
     {
-        for (int i = 0; i < individual.chromosome.size(); ++i)
-        {
-            if (std::generate_canonical<double, 10>(gen) < MUTATION_RATE)
-            {
-                
-            }
-        }
+        
     }
 
     
-    Individual crossover(const Individual &parent1, const Individual &parent2)
-{
-    std::vector<int> offspringChromosome;
-
-   
-    
-    std::uniform_int_distribution<int> dist(0, parent1.chromosome.size() - 1);
-    int crossoverPoint = dist(gen);
-
-   
-    for (int i = 0; i < parent1.chromosome.size(); ++i)
-    {
-        if (i < crossoverPoint)
-        {
-            offspringChromosome.push_back(parent1.chromosome[i]);
-        }
-        else
-        {
-            offspringChromosome.push_back(parent2.chromosome[i]);
-        }
-    }
-
-    return Individual(offspringChromosome);
-}
 
 
 
-    
+
+    */
     
     void calculateFitness(Individual &individual)
     {
-       //function calculating time of doing the task
+       
 	//Time and cost calculation (else algorithm quality check)
 	//returns time required to made such task
 	//throws exception if cannot made such task	    
@@ -208,60 +223,12 @@ std::vector<Individual> initializePopulation(int size_of_population)
     }
 	
 	
-std::pair<Individual, Individual> selectParents(const std::vector<Individual>& population)
+std::pair<Individual, Individual> selectParents(std::vector<Individual>& population)
 {
-    std::random_device rd;
-    std::mt19937 gen(rd());
+ 
 
-    
-    int tournamentSize = 5;
-
-    // select participants for the first tournament
-    std::vector<Individual> participants;
-    for (int i = 0; i < tournamentSize; ++i)
-    {
-        std::uniform_int_distribution<int> dist(0, population.size() - 1);
-        int index = dist(gen);
-        participants.push_back(population[index]);
-    }
-
-    // fnd the individual with the highest fitness in the tournament
-    Individual parent1 = *std::max_element(participants.begin(), participants.end(),
-        [](const Individual& ind1, const Individual& ind2)
-        {
-            return ind1.fitness < ind2.fitness;
-        });
-
-    
-
-    // select participants for the second tournament from the updated population
-    participants.clear();
-    for (int i = 0; i < tournamentSize; ++i)
-    {
-        std::uniform_int_distribution<int> dist(0, population.size() - 1);
-        int index = dist(gen);
-        participants.push_back(population[index]);
-    }
-
-    // find the individual with the highest fitness in the second tournament
-    Individual parent2 = *std::max_element(participants.begin(), participants.end(),
-        [](const Individual& ind1, const Individual& ind2)
-        {
-            return ind1.fitness < ind2.fitness;
-        });
-        
-    // remove the selected parent from the population
-    auto parent1It = std::find(population.begin(), population.end(), parent1);
-    population.erase(parent1It);    
-    //auto parent2It = std::find(population.begin(), population.end(), parent2);
-    population.erase(parent1It);
-
-    return std::make_pair(parent1, parent2);
+ 
 }
-
-
-  
-	
 	
    std::vector<Individual> generateNewPopulation(const std::vector<Individual> &population)
     {
@@ -282,37 +249,35 @@ std::pair<Individual, Individual> selectParents(const std::vector<Individual>& p
     }
 
 	
-	
-	void runGeneticAlgorithm()
+	Individual runGeneticAlgorithm()
+{
+    BaseManager baseManager;
+
+    std::vector<Individual> population = initializePopulation();
+    evaluatePopulation(population);
+    int generation = 0;
+    while (generation < MAX_GENERATIONS)
     {
+        std::vector<Individual> newPopulation = generateNewPopulation(population);
+        evaluatePopulation(newPopulation);
+        // Replacing the population
+        population = newPopulation;
 
-        std::vector<Individual> population = initializePopulation();
-        evaluatePopulation(population);
-        int generation = 0;
-        while (generation < MAX_GENERATIONS)
-        {
-            
-            std::vector<Individual> newPopulation = generateNewPopulation(population);
-            evaluatePopulation(newPopulation);
-            // Replacing the population
-            population = newPopulation;
-
-            ++generation;
-        }
-
-        // Selecting fittest one
-        Individual bestIndividual = population[0];
-        for (const auto &individual : population)
-        {
-            if (individual.fitness > bestIndividual.fitness)
-            {
-                bestIndividual = individual;
-            }
-        }
-
-        
+        ++generation;
     }
-};
+
+    // Selecting fittest one
+    Individual bestIndividual = population[0];
+    for (const auto &individual : population)
+    {
+        if (individual.fitness > bestIndividual.fitness)
+        {
+            bestIndividual = individual;
+        }
+    }
+    
+    return bestIndividual;
+}
 
 
 private:
@@ -320,4 +285,9 @@ private:
 	{
 
 	}
-};
+}
+
+
+
+
+
