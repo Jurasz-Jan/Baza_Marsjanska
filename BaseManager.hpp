@@ -36,7 +36,7 @@ public:
         return habitats[Id];
     }
 
-    void AddHabitat(Habitat newHabitat)
+    virtual void AddHabitat(Habitat newHabitat)
     {
         habitats.push_back(newHabitat);
     }
@@ -69,7 +69,7 @@ public:
     }
 
     //schould have alt version with debug couts
-    double DoTaskGraph()
+    double CalculateGlobalTime()
     {
         //first create indicators
         taskTaken.clear();
@@ -80,12 +80,13 @@ public:
         for (int i = 0; i < size; ++i)
         {
             taskNeeds.push_back(0);
-            taskTaken.push_back(0);
+            taskTaken.push_back(false);
         }
         for (int i = 0; i < size; ++i)
         {
-            for (int j = 0; j < taskGraph[i].children.size(); ++i)
+            for (int j = 0; j < taskGraph[i].children.size(); ++j)
             {
+                std::cout << "added to " << taskGraph[i].children[j] << std::endl;
                 taskNeeds[taskGraph[i].children[j]] += 1;
             }
         }
@@ -103,13 +104,27 @@ public:
         do
         {
             possibleTasks.clear();
+            std::cout << "impossible ";
             for (int i = 0; i < size; ++i)
             {
                 if (taskNeeds[i] == 0 && taskTaken[i] == false)
                 {
                     possibleTasks.push_back(i);
                 }
+                else
+                {
+                    if (taskTaken[i] == true)
+                    {
+                    }
+                    if (taskNeeds[i] != 0)
+                    {
+                        std::cout << taskNeeds[i] << ", ";
+                        std::cout << i << " ";
+                    }
+                    
+                }
             }
+            std::cout << std::endl;
             //debug
             std::cout << "possible tasks" << std::endl;
             for (int i = 0; i < possibleTasks.size(); ++i)
@@ -135,6 +150,10 @@ public:
                         return -1;
                     }
                 }
+                else
+                {
+                    std::cout << "all habitats taken" << std::endl;
+                }
             }
             else if (possibleTasks.size() > 1)
             {
@@ -142,6 +161,7 @@ public:
                 std::vector<int> habs = FindHabitatForTask(possibleTasks);
                 std::cout << "multi hab" << std::endl;
 
+                bool tried = false;
                 //for now not choosing longest route
                 //if 2 or more tasks by same hab he just chooses first from left
                 for (int i = 0; i < possibleTasks.size(); ++i)
@@ -151,6 +171,7 @@ public:
                         try
                         {
                             StartWorking(&(habitats[habs[i]]), possibleTasks[i]);
+                            tried = true;
                         }
                         catch (std::string message)
                         {
@@ -159,10 +180,14 @@ public:
                         }
                     }
                 }
+                if (!tried)
+                {
+                    std::cout << "all habs taken" << std::endl;
+                }
 
             }
 
-            if (possibleTasks.size() > 0)
+            if (workingHabitats.size() > 0)
             {
                 globalTime += PassGlobalTime();
             }
@@ -184,7 +209,7 @@ private:
         taskTaken[possibleTask] = true;
         hab->isWorking = true;
         hab->taskInWork = possibleTask;
-        std::cout << BaseData.HabitatTaskTime(hab->GetType(), possibleTask, true) << std::endl;
+        //std::cout << BaseData.HabitatTaskTime(hab->GetType(), possibleTask, true) << std::endl;
 
         //first work is doing task, rest is doing communication
         hab->workTimeLeft.clear();
@@ -201,17 +226,25 @@ private:
             {
                 throw message;
             }
-            hab->comInWork.push_back(i);
+            hab->comInWork.push_back(taskGraph[possibleTask].children[i]);
         }
+        std::cout << "com in works ";
+        for (int i = 0; i < hab->comInWork.size(); ++i)
+        {
+            std::cout << hab->comInWork[i] << " ";
+        }
+        std::cout << std::endl;
 
+        /*
         for (int i = 0; i < hab->comInWork.size(); ++i)
         {
             std::cout << hab->workTimeLeft[i] << " ";
         }
         std::cout << std::endl;
+        */
 
         workingHabitats.push_back(hab);
-        std::cout << hab->workTimeLeft[0] << std::endl;
+        //std::cout << hab->workTimeLeft[0] << std::endl;
     }
 
     double PassGlobalTime()
@@ -231,7 +264,7 @@ private:
                     minHabTime = workingHabitats[i]->workTimeLeft[0];
                     quickestHabId = i;
                     quickestHab = workingHabitats[i];
-                    quickestJob = 0;
+                    //quickestJob = 0;
                 }
             }
             else
@@ -258,21 +291,25 @@ private:
         }
 
         //only stop working if communication ends, ending task does not ends work
-        
+       
         //still doing work
-        int doneJob = quickestHab->comInWork[quickestJob];
         //std::cout << "job done " << quickestJob << std::endl;
-        if (doneJob < 0) //ending task directly
+        if (quickestHab->comInWork[0] < 0) //ending task directly
         {
             std::cout << "there" << std::endl;
         }
         else //ending communication
         {
-            taskNeeds[taskGraph[quickestHab->taskInWork].children[quickestJob]] -= 1;
+            std::cout << quickestHab->comInWork[0] << std::endl;
+            std::cout << "ending com with ";
+            std::cout << "job " << quickestJob << std::endl;
+            //std::cout << taskGraph[quickestHab->taskInWork].children[quickestHab->comInWork[quickestJob]] << std::endl;
+            //taskNeeds[taskGraph[quickestHab->taskInWork].children[quickestHab->comInWork[quickestJob]]] -= 1;
+            taskNeeds[quickestHab->comInWork[quickestJob]] -= 1;
         }
         quickestHab->workTimeLeft.erase(quickestHab->workTimeLeft.begin() + quickestJob);
         quickestHab->comInWork.erase(quickestHab->comInWork.begin() + quickestJob);
-        
+
         if (quickestHab->workTimeLeft.size() <= 0) //stop working
         {
             quickestHab->isWorking = false;
