@@ -139,6 +139,8 @@ int main()
 	}
 	*/
 
+	//debug check for reading file
+	/*
 	std::cout << "data check (time): " << std::endl;
 	for (int i = 0; i < BaseData.habitatTaskTimes.size(); ++i)
 	{
@@ -167,6 +169,7 @@ int main()
 		}
 		std::cout << std::endl;
 	}
+	*/
 
 	//defines for later use
 	//---------------------------------------------
@@ -267,7 +270,6 @@ int main()
 	for (int i = 1; i < habNum; ++i)
 	{
 		int rand = RandomGenerator.RandomIntRange(1, 10);
-		std::cout << "random int: " << rand << std::endl;
 		
 		int choosenHab = 0;
 		if (rand <= 1)
@@ -307,30 +309,45 @@ int main()
 		addingAmount[choosenHab] += 1;
 		lastChoosenHab = choosenHab;
 	}
-
+	//set parents;
+	//at start relation is ->->->->->
+	for (int i = 0; i < mainBase.habitats.size(); ++i)
+	{
+		mainBase.parents.push_back(i - 1);
+	}
 	//std::cout << "check end" << std::endl;
 	//return 0;
-
-	//test check if doing task graph works:
-	//double tasksTime = mainBase.CalculateGlobalTime();
-	//std::cout << "base time completion: " << tasksTime << std::endl;
-	//std::cout << "base total cost: " << mainBase.CalculateGlobalCost() << std::endl;
 
 
 	//MAIN LOOP
 	//-------------------------------------------
 	std::cout << "gen" << std::endl;
 	mainBase.RedistributeTasks();
+
+	//test check if doing task graph works:
+	std::cout << "base time completion: " << mainBase.CalculateGlobalTime(true) << std::endl;
+	std::cout << "base total cost: " << mainBase.CalculateGlobalCost() << std::endl;
+
+	//habitat tasks redistribution
+	/*
+	std::cout << "task redistribution: " << std::endl;
+	std::cout << std::endl;
 	for (int i = 0;i < mainBase.habitats.size(); ++i)
 	{
-		std::cout << "percent " << mainBase.habitats[i].taskPercentage << " ";
+		//std::cout << "habitat(" << i << ") ";
+		std::cout << "percentTaken(" << mainBase.habitats[i].taskPercentage << ") ";
+		std::cout << "tasks: ";
 		for (int j = 0; j < mainBase.habitats[i].takenTasks.size(); ++j)
 		{
 			std::cout << mainBase.habitats[i].takenTasks[j] << " ";
 		}
 	}
 	std::cout << std::endl;
-	return 0;
+	*/
+
+	//best result;
+	BaseManager bestBase;
+
 	while (true)
 	{
 		//here goes genetic algorithm
@@ -340,11 +357,40 @@ int main()
 		mainBase.Crossover();
 		mainBase.MutateHabitat();
 		mainBase.MutateParents();
-		//*
+		/*
 		for (int i = 0; mainBase.habitats.size(); ++i)
 		{
 			std::cout << mainBase.habitats[i].taskPercentage << std::endl;
 		}
+		*/
+		//*
+		std::cout << "another iteration" << std::endl;
+		std::cout << "base time completion: " << mainBase.CalculateGlobalTime() << std::endl;
+		std::cout << "base total cost: " << mainBase.CalculateGlobalCost() << std::endl;
+		std::cout << std::endl;
 		//*/
+
+		//if best
+		bestBase.habitats = mainBase.habitats;
 	}
+
+	//ending condition
+	//best
+	std::cout << "BEST BASE" << std::endl;
+	std::cout << "best result"  << std::endl << "base time completion: " << bestBase.CalculateGlobalTime(true) << std::endl;
+	std::cout << "base total cost: " << bestBase.CalculateGlobalCost() << std::endl;
+	//best task redistribiution
+	std::cout << "task redistribution: " << std::endl;
+	std::cout << std::endl;
+	for (int i = 0;i < mainBase.habitats.size(); ++i)
+	{
+		//std::cout << "habitat(" << i << ") ";
+		std::cout << "percentTaken(" << mainBase.habitats[i].taskPercentage << ") ";
+		std::cout << "tasks: ";
+		for (int j = 0; j < mainBase.habitats[i].takenTasks.size(); ++j)
+		{
+			std::cout << mainBase.habitats[i].takenTasks[j] << " ";
+		}
+	}
+	std::cout << std::endl;
 }
