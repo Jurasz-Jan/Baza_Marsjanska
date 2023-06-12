@@ -1,17 +1,21 @@
+#include <cstdio>
 #include <iostream>
-#include "FileLoader.hpp"
-#include "BaseManager.hpp"
-#include "Task.hpp"
-#include "Randomizer.hpp"
-#include "Genetic.hpp"
+#include <limits>
 
-//collection of static workings on a task file
-//is in main due to it being actually part of main
-//but compilation process requires static functions
+#include "BaseManager.hpp"
+#include "FileLoader.hpp"
+#include "Genetic.hpp"
+#include "Randomizer.hpp"
+#include "Task.hpp"
+
+
+// collection of static workings on a task file
+// is in main due to it being actually part of main
+// but compilation process requires static functions
 class FileInterpreter
 {
 public:
-	friend int main(); //only main can access this class
+	friend int main();  // only main can access this class
 private:
 	static void PrintFile(std::vector<std::string>* data)
 	{
@@ -24,18 +28,17 @@ private:
 
 	static void ConstructTaskGraph(std::vector<std::string>* data)
 	{
-		//now only cout for testing
-		//taskGraph.taskList.push_back(TreeNode<Task>(((*data)[0])));
+		// now only cout for testing
+		// taskGraph.taskList.push_back(TreeNode<Task>(((*data)[0])));
 		try
 		{
 			TaskType.GetId((*data)[0]);
-		}
-		catch (const std::out_of_range& message)
+		} catch (const std::out_of_range& message)
 		{
-			//add only if new type encountered
+			// add only if new type encountered
 			TaskType.label.push_back((*data)[0]);
 		}
-		//Task aaa((*data)[0], taskGraph.size());
+		// Task aaa((*data)[0], taskGraph.size());
 		taskGraph.taskList.push_back(Task((*data)[0], taskGraph.size()));
 		unsigned int last = taskGraph.size() - 1;
 		for (int i = 1; i < data->size(); i += 2)
@@ -49,7 +52,7 @@ private:
 	{
 		HabitatType.label.push_back((*data)[0]);
 		BaseData.habitatBuildCost.push_back(std::stod((*data)[1]));
-		//possible task types by habitat
+		// possible task types by habitat
 		unsigned int last = BaseData.habitatBuildCost.size() - 1;
 		BaseData.habitatTasks.push_back(std::vector<int>());
 		for (int i = 2; i < data->size(); ++i)
@@ -107,31 +110,64 @@ private:
 	}
 };
 
-
-
-int main()
+void find_flags(int argc, char const* argv[], bool& noAlgorithm, int& habNum, int& maxIter, bool& habNum_set,
+				bool& maxIter_set)
 {
-	//START
+	for (int i = 1; i < argc; ++i)
+	{
+		if (!strcmp(argv[i], "-noalgorithm") || !strcmp(argv[i], "-test"))
+			noAlgorithm = true;
+
+		if ((!strcmp(argv[i], "-h") || !strcmp(argv[i], "-habnum")) && i < (argc - 1))
+		{
+			habNum_set = true;
+			habNum     = atoi(argv[i + 1]);
+		}
+		if ((!strcmp(argv[i], "-iter") || !strcmp(argv[i], "-maxiter")) && i < (argc - 1))
+		{
+			maxIter_set = true;
+			maxIter     = atoi(argv[i + 1]);
+		}
+	}
+}
+
+int main(int argc, char const* argv[])
+{
+	// Flags
+	bool noAlgorithm                 = false;
+	int habNum                       = 1;
+	bool habNum_set                  = false;
+	int maxIterationsBeforeStop      = 100;
+	bool maxIterationsBeforeStop_set = false;
+
+	find_flags(argc, argv, noAlgorithm, habNum, maxIterationsBeforeStop, habNum_set, maxIterationsBeforeStop_set);
+
+	// START
 	//------------------------------------------
 	GeneticAlgorithm mainBase;
-	//here setup for database and enums
+	// here setup for database and enums
 
-	//LOAD FILE
+	// LOAD FILE
 	//------------------------------------------
-	typedef void(*fileFunction)(std::vector<std::string>*);
-	fileFunction fileFunctions[6] = { FileInterpreter::PrintFile, FileInterpreter::ConstructTaskGraph, FileInterpreter::LoadHabitatTypes, FileInterpreter::LoadHabitatTasksTime, FileInterpreter::LoadHabitatTasksCost, FileInterpreter::LoadChannels};
-	
+	typedef void (*fileFunction)(std::vector<std::string>*);
+	fileFunction fileFunctions[6] = {FileInterpreter::PrintFile,
+									 FileInterpreter::ConstructTaskGraph,
+									 FileInterpreter::LoadHabitatTypes,
+									 FileInterpreter::LoadHabitatTasksTime,
+									 FileInterpreter::LoadHabitatTasksCost,
+									 FileInterpreter::LoadChannels};
+
 	std::cout << "give name of file with settings: ";
 	std::string name;
 	std::cin >> name;
 	TaskFileLoader fileLoader;
-	//fileLoader.ReadFile(name, fileFunctions, 6);
+	// fileLoader.ReadFile(name, fileFunctions, 6);
 
-	//FOR TESTING!!!!!!!!!
+	// FOR TESTING!!!!!!!!!
 	fileLoader.ReadFile("SingleTest.txt", fileFunctions, 6);
-	//fileLoader.ReadFile("MultiHabTest.txt", fileFunctions, 6);
+	// fileLoader.ReadFile("MultiHabTest.txt", fileFunctions, 6);
 
-	//here check if data is good:
+	// here check if data is good:
 	/*
 	for (int i = 0; i < BaseData.channelBuildCost.size(); ++i)
 	{
@@ -139,7 +175,7 @@ int main()
 	}
 	*/
 
-	//debug check for reading file
+	// debug check for reading file
 	/*
 	std::cout << "data check (time): " << std::endl;
 	for (int i = 0; i < BaseData.habitatTaskTimes.size(); ++i)
@@ -171,9 +207,9 @@ int main()
 	}
 	*/
 
-	//defines for later use
+	// defines for later use
 	//---------------------------------------------
-	//define max channelSpeed
+	// define max channelSpeed
 	double maxSpeed = 0;
 	for (int i = 0; i < BaseData.channelSpeed.size(); ++i)
 	{
@@ -183,26 +219,26 @@ int main()
 		}
 	}
 	BaseData.maxChannelSpeed = maxSpeed;
-	//PreperationsForHabitatAdding
+	// PreperationsForHabitatAdding
 	//-------------------------------------------------
 	if (HabitatType.GetSize() <= 0)
 	{
 		std::cout << "error! base needs at least one habitat to work!" << std::endl;
 		return 1;
 	}
-	//general purpose
+	// general purpose
 	std::vector<int> startHabType;
-	int cheapestHab = 0;
+	int cheapestHab   = 0;
 	double minHabCost = BaseData.habitatBuildCost[0];
 	for (int i = 0; i < BaseData.habitatTasks.size(); ++i)
 	{
-		//no specyfic tasks, so it is general purpose
+		// no specyfic tasks, so it is general purpose
 		if (BaseData.habitatTasks[i].size() <= 0)
 		{
 			startHabType.push_back(i);
 			if (minHabCost < BaseData.habitatBuildCost[i])
 			{
-				minHabCost = BaseData.habitatBuildCost[i];
+				minHabCost  = BaseData.habitatBuildCost[i];
 				cheapestHab = i;
 			}
 		}
@@ -212,7 +248,7 @@ int main()
 		std::cout << "error! base needs at least one habitat of general purpose" << std::endl;
 		return 1;
 	}
-	//min time and cost
+	// min time and cost
 	double minTaskTime = 0;
 	double minTaskBoth = 0;
 	int minTaskTimeHab = 0;
@@ -234,43 +270,48 @@ int main()
 		}
 		if (minTaskTime > curTaskTime)
 		{
-			minTaskTime = curTaskTime;
+			minTaskTime    = curTaskTime;
 			minTaskTimeHab = i;
 		}
 		if (minTaskBoth > curTaskCost * curTaskTime)
 		{
-			minTaskBoth = curTaskCost * curTaskTime;
+			minTaskBoth    = curTaskCost * curTaskTime;
 			minTaskBothHab = i;
 		}
 	}
 
-	//BASE CONSTRUCTION
+	// BASE CONSTRUCTION
 	//------------------------------------------
-	//for future: schould choose by random
-	//first habitat
+	// for future: schould choose by random
+	// first habitat
 	mainBase.AddHabitat(Habitat(startHabType[0]));
 	for (int i = 0; i < taskGraph.taskList.size(); ++i)
 	{
 		mainBase.habitats[0].takenTasks.push_back(i);
 	}
-	 
-	//rest habs
-	std::cout << "give number of habitats" << std::endl;
-	int habNum = 1;
-	std::cin >> habNum;
-	//LEGEND:
-	//chapest general 0.1
-	//quickest 0.1 (how?, it depends by tasks)
-	//least time and cost of possible tasks 0.4 (is by possible, not taken)
-	//same as last time 0.2
-	//least added 0.2
+
+	// rest habs
+	if (!habNum_set)
+	{
+		std::cout << "give number of habitats" << std::endl;
+		std::cin >> habNum;
+	}
+	else
+		std::cout << "number of habitats is set to " + habNum << std::endl;
+
+	// LEGEND:
+	// chapest general 0.1
+	// quickest 0.1 (how?, it depends by tasks)
+	// least time and cost of possible tasks 0.4 (is by possible, not taken)
+	// same as last time 0.2
+	// least added 0.2
 	std::vector<int> addingAmount;
-	int lastChoosenHab = 0; //schould be starting
+	int lastChoosenHab = 0;  // schould be starting
 	addingAmount.resize(BaseData.habitatBuildCost.size(), 0);
 	for (int i = 1; i < habNum; ++i)
 	{
 		int rand = RandomGenerator.RandomIntRange(1, 10);
-		
+
 		int choosenHab = 0;
 		if (rand <= 1)
 		{
@@ -290,45 +331,44 @@ int main()
 		}
 		else
 		{
-			int leastHab = 0;
+			int leastHab  = 0;
 			int minChoice = addingAmount[0];
 			for (int i = 0; i < addingAmount.size(); ++i)
 			{
 				if (minChoice > addingAmount[i])
 				{
 					minChoice = addingAmount[i];
-					leastHab = i;
+					leastHab  = i;
 				}
 			}
 			choosenHab = leastHab;
 		}
 		std::cout << "added hab of type" << choosenHab << std::endl;
-		//here add habitat
+		// here add habitat
 		mainBase.AddHabitat(Habitat(choosenHab));
 		mainBase.habitats[mainBase.habitats.size() - 1].taskPercentage = RandomGenerator.RandomDoublePercent();
 		addingAmount[choosenHab] += 1;
 		lastChoosenHab = choosenHab;
 	}
-	//set parents;
-	//at start relation is ->->->->->
+	// set parents;
+	// at start relation is ->->->->->
 	for (int i = 0; i < mainBase.habitats.size(); ++i)
 	{
 		mainBase.parents.push_back(i - 1);
 	}
-	//std::cout << "check end" << std::endl;
-	//return 0;
+	// std::cout << "check end" << std::endl;
+	// return 0;
 
-
-	//MAIN LOOP
+	// MAIN LOOP
 	//-------------------------------------------
 	std::cout << "gen" << std::endl;
 	mainBase.RedistributeTasks();
 
-	//test check if doing task graph works:
+	// test check if doing task graph works:
 	std::cout << "base time completion: " << mainBase.CalculateGlobalTime(true) << std::endl;
 	std::cout << "base total cost: " << mainBase.CalculateGlobalCost() << std::endl;
 
-	//habitat tasks redistribution
+	// habitat tasks redistribution
 	/*
 	std::cout << "task redistribution: " << std::endl;
 	std::cout << std::endl;
@@ -345,15 +385,31 @@ int main()
 	std::cout << std::endl;
 	*/
 
-	//best result;
+	// If no algorithm flag is set, the genetic algorithm will not begin
+	// for testing purposes only
+	if (noAlgorithm)
+		return 0;
+
+	if (!maxIterationsBeforeStop_set)
+	{
+		std::cout << "give max number of extra iterations if the algorithm is stuck" << std::endl;
+		std::cin >> maxIterationsBeforeStop;
+	}
+	else
+		std::cout << "number of max iterations before stop is set to " + maxIterationsBeforeStop << std::endl;
+
+	// best result;
 	BaseManager bestBase;
+	double bestTime = std::numeric_limits<double>::max();
+
+	int iterations = 0;
 
 	while (true)
 	{
-		//here goes genetic algorithm
+		// here goes genetic algorithm
 
 		//-----------------------------------
-		//quality check
+		// quality check
 		mainBase.Crossover();
 		mainBase.MutateHabitat();
 		mainBase.MutateParents();
@@ -364,27 +420,42 @@ int main()
 		}
 		*/
 		//*
+
+		auto time = mainBase.CalculateGlobalTime();
+
 		std::cout << "another iteration" << std::endl;
-		std::cout << "base time completion: " << mainBase.CalculateGlobalTime() << std::endl;
+		std::cout << "base time completion: " << time << std::endl;
 		std::cout << "base total cost: " << mainBase.CalculateGlobalCost() << std::endl;
 		std::cout << std::endl;
 		//*/
 
-		//if best
-		bestBase.habitats = mainBase.habitats;
+		// if best
+		if (time < bestTime)
+		{
+			iterations        = 0;
+			bestBase.habitats = mainBase.habitats;
+			bestTime          = time;
+		}
+		else
+		{
+			++iterations;
+			if (iterations > maxIterationsBeforeStop)
+				break;
+		}
 	}
 
-	//ending condition
-	//best
+	// ending condition
+	// best
 	std::cout << "BEST BASE" << std::endl;
-	std::cout << "best result"  << std::endl << "base time completion: " << bestBase.CalculateGlobalTime(true) << std::endl;
+	std::cout << "best result" << std::endl
+			  << "base time completion: " << bestBase.CalculateGlobalTime(true) << std::endl;
 	std::cout << "base total cost: " << bestBase.CalculateGlobalCost() << std::endl;
-	//best task redistribiution
+	// best task redistribiution
 	std::cout << "task redistribution: " << std::endl;
 	std::cout << std::endl;
-	for (int i = 0;i < mainBase.habitats.size(); ++i)
+	for (int i = 0; i < mainBase.habitats.size(); ++i)
 	{
-		//std::cout << "habitat(" << i << ") ";
+		// std::cout << "habitat(" << i << ") ";
 		std::cout << "percentTaken(" << mainBase.habitats[i].taskPercentage << ") ";
 		std::cout << "tasks: ";
 		for (int j = 0; j < mainBase.habitats[i].takenTasks.size(); ++j)
