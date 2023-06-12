@@ -158,7 +158,25 @@ void RedistributeTasksInner(int hab)
 
 
 //crossing on channels
+void RunAlgorithm()
+{
+bool runFurther=true;
+int time1,time2,time3;
+while(runFurther)
+{
+    Crossover(SelectionWorst,SelectionNext);
+    MutateHabitat();
+    time3=GetTime();
+    if (time3>= 0.99*time2 && time3 >= 0.99time1)
+    {
+        runFurther=false;
+    }
 
+}
+
+
+
+}
 
 
 //jak robić geneticalgorithm
