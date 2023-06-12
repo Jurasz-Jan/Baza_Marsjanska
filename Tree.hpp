@@ -9,13 +9,13 @@ class TreeNode
 {
 public:
 	T data;
-	std::vector<TreeNode *> children;
+	std::vector<TreeNode<T> *> children;
 
 	explicit TreeNode(T x) : data(x) {}
 };
 
 // ||--------------------------------------------------------------------------------||
-// ||              Tree data structure for use in the genetic algorightm             ||
+// ||              Tree data structure for use in the genetic algorithm              ||
 // ||--------------------------------------------------------------------------------||
 
 template <typename T>
@@ -41,8 +41,8 @@ public:
 		if (search(value) != nullptr)
 			return;  // do nothing if node with given value already exists
 
-		TreeNode *newNode    = new TreeNode(value);
-		TreeNode *parentNode = search(parent);
+		TreeNode<T> *newNode    = new TreeNode<T>(value);
+		TreeNode<T> *parentNode = search(parent);
 
 		if (parentNode == nullptr)
 		{
@@ -58,8 +58,8 @@ public:
 
 	void insert(const std::vector<std::pair<T, T>> &edge)
 	{
-		TreeNode *newNode    = new TreeNode(edge.second);
-		TreeNode *parentNode = search(edge.first);
+		TreeNode<T> *newNode    = new TreeNode<T>(edge.second);
+		TreeNode<T> *parentNode = search(edge.first);
 
 		if (parentNode == nullptr)
 			root = newNode;
@@ -81,21 +81,21 @@ public:
 	}
 
 	// Perform crossover operation to create offspring from selected parents
-	TreeNode *crossover(const std::vector<TreeNode *> &parents, int randomValue)
+	TreeNode<T> *crossover(const std::vector<TreeNode<T> *> &parents, int randomValue)
 	{
-		TreeNode *offspring = nullptr;
+		TreeNode<T> *offspring = nullptr;
 
 		if (parents.size() < 2)
-			return;  // do nothing if there aren't enough parents
+			return TreeNode<T>();  // do nothing if there aren't enough parents
 
 		// Choose a random parent as the root of the offspring tree
 		int randomIndex = randomValue % parents.size();
-		offspring       = new TreeNode(parents[randomIndex]->data);
+		offspring       = new TreeNode<T>(parents[randomIndex]->data);
 
 		// Recursively copy the children of the selected parents
-		for (const TreeNode *child : parents[randomIndex]->children)
+		for (const TreeNode<T> *child : parents[randomIndex]->children)
 		{
-			TreeNode *childCopy = copyTree(child);
+			TreeNode<T> *childCopy = copyTree(child);
 			offspring->children.push_back(childCopy);
 		}
 
@@ -104,11 +104,11 @@ public:
 		{
 			if (i != randomIndex)
 			{
-				for (const TreeNode *child : parents[i]->children)
+				for (const TreeNode<T> *child : parents[i]->children)
 				{
 					if (rand() % 2 == 0)  // Randomly choose whether to include the child
 					{
-						TreeNode *childCopy = copyTree(child);
+						TreeNode<T> *childCopy = copyTree(child);
 						offspring->children.push_back(childCopy);
 					}
 				}
@@ -126,11 +126,11 @@ public:
 
 	void destroyTreeFrom(const T &value)
 	{
-		TreeNode *node = search(value);
+		TreeNode<T> *node = search(value);
 
 		if (node != nullptr)
 		{
-			for (TreeNode *child : node->children)
+			for (TreeNode<T> *child : node->children)
 			{
 				destroyTreeFromNode(child);
 			}
@@ -141,11 +141,11 @@ public:
 	void print() { printFromNode(root); }
 
 private:
-	TreeNode *root = nullptr;
+	TreeNode<T> *root = nullptr;
 
-	void insertNode(const T &value, TreeNode *parent)
+	void insertNode(const T &value, TreeNode<T> *parent)
 	{
-		TreeNode *newNode = new TreeNode(value);
+		TreeNode<T> *newNode = new TreeNode<T>(value);
 		if (parent == nullptr)
 			root = newNode;
 
@@ -153,27 +153,27 @@ private:
 			parent->children.push_back(newNode);
 	}
 
-	TreeNode *copyTree(const TreeNode *node)
+	TreeNode<T> *copyTree(const TreeNode<T> *node)
 	{
 		if (node == nullptr)
 			return nullptr;
 
-		TreeNode *newNode = new TreeNode(node->data);
+		TreeNode<T> *newNode = new TreeNode<T>(node->data);
 
-		for (const TreeNode *child : node->children)
+		for (const TreeNode<T> *child : node->children)
 		{
-			TreeNode *childCopy = copyTree(child);
+			TreeNode<T> *childCopy = copyTree(child);
 			newNode->children.push_back(childCopy);
 		}
 
 		return newNode;
 	}
 
-	void destroyTreeFromNode(TreeNode *node)
+	void destroyTreeFromNode(TreeNode<T> *node)
 	{
 		if (node != nullptr)
 		{
-			for (TreeNode *child : node->children)
+			for (TreeNode<T> *child : node->children)
 			{
 				destroyTreeFromNode(child);
 			}
@@ -181,9 +181,9 @@ private:
 		}
 	}
 
-	TreeNode *search(const T &value) { return searchNode(root, value); }
+	TreeNode<T> *search(const T &value) { return searchNode(root, value); }
 
-	TreeNode *searchNode(TreeNode *node, const T &value)
+	TreeNode<T> *searchNode(TreeNode<T> *node, const T &value)
 	{
 		if (node == nullptr)
 			return nullptr;
@@ -191,9 +191,9 @@ private:
 		if (node->data == value)
 			return node;
 
-		for (TreeNode *child : node->children)
+		for (TreeNode<T> *child : node->children)
 		{
-			TreeNode *result = searchNode(child, value);
+			TreeNode<T> *result = searchNode(child, value);
 			if (result != nullptr)
 				return result;
 		}
@@ -201,18 +201,18 @@ private:
 		return nullptr;
 	}
 
-	void printFromNode(TreeNode *node, int indentation = 0)
+	void printFromNode(TreeNode<T> *node, int indentation = 0)
 	{
 		if (node != nullptr)
 		{
 			std::cout << std::string(indentation, '\t') << "TreeNode: " << node->data << "\t\tChildren:\n";
 
-			for (TreeNode *child : node->children)
+			for (TreeNode<T> *child : node->children)
 			{
 				std::cout << std::string(indentation + 1, '\t') << child->data << std::endl;
 			}
 
-			for (TreeNode *child : node->children)
+			for (TreeNode<T> *child : node->children)
 			{
 				printFromNode(child, indentation + 1);
 			}
