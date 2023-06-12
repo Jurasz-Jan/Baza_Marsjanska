@@ -106,7 +106,7 @@ public:
 			{
 				for (const TreeNode<T> *child : parents[i]->children)
 				{
-					if (rand() % 2 == 0)  // Randomly choose whether to include the child
+					if (randomValue % 2 == 0)  // Randomly choose whether to include the child
 					{
 						TreeNode<T> *childCopy = copyTree(child);
 						offspring->children.push_back(childCopy);
